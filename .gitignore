@@ -1,0 +1,18 @@
+# Go
+/auth/keys/
+/worker/data/
+*.sqlite
+*.sqlite-journal
+
+# Node
+node_modules/
+web/dist/
+web/.env
+web/.env.local
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
