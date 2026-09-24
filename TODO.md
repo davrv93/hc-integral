@@ -36,10 +36,15 @@ comentario de estado; se actualiza según el reporte de cada servicio.
 
 ## Fase 4 — Espejo SQLite (worker)
 
-- [ ] Lee `outbox`, aplica a SQLite, marca `procesado`
-- [ ] `GET /healthz` con pendientes y última sincronización
-- [ ] `go build ./...` sin errores
-- [ ] Prueba (unitaria o end-to-end)
+- [x] Lee `outbox`, aplica a SQLite, marca `procesado`
+- [x] `GET /healthz` con pendientes y última sincronización
+- [x] `go build ./...`, `go vet`, `go test`, `gofmt` sin errores
+- [x] Probado end-to-end contra Postgres real (insert/update/delete replicado)
+      y contra la imagen Docker; apagado limpio con SIGTERM verificado.
+
+Simplificaciones documentadas en `worker/README.md`: entrega at-least-once
+(seguro por upsert idempotente), sin introspección automática de esquema,
+`usuarios`/`auditoria` no se espejan (no están en el contrato de este worker).
 
 ## Fase 5 — Frontend (React + Tailwind)
 
