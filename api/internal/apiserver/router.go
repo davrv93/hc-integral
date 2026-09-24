@@ -8,14 +8,16 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 
 	"hc/api/internal/authn"
 	"hc/api/internal/store"
 )
 
 type Server struct {
-	Store *store.Store
-	Auth  *authn.Middleware
+	Store              *store.Store
+	Auth               *authn.Middleware
+	CORSAllowedOrigins []string
 }
 
 func New(st *store.Store, auth *authn.Middleware) *Server {
@@ -29,6 +31,13 @@ func (s *Server) Router() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   s.CORSAllowedOrigins,
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           300,
+	}))
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", s.handleHealth)

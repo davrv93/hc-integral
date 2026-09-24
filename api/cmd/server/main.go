@@ -34,6 +34,7 @@ func main() {
 
 	auth := authn.NewMiddleware(keys, cfg.JWTIssuer)
 	srv := apiserver.New(st, auth)
+	srv.CORSAllowedOrigins = cfg.CORSAllowedOrigins
 
 	httpServer := &http.Server{
 		Addr:              ":" + cfg.APIPort,
