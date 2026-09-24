@@ -35,14 +35,22 @@ cuenta.
 
 ## Fase 3 — API (Go, REST)
 
-- [ ] Middleware JWT (valida contra JWKS del auth-service)
-- [ ] CRUD pacientes / médicos
-- [ ] CRUD historias + intervenciones por disciplina
-- [ ] Auditoría en cada escritura
-- [ ] `GET /api/v1/reportes/resumen`
-- [ ] Paginación y filtros (`q`, médico, plan, objetivos, estado)
-- [ ] `go build ./...` sin errores
-- [ ] Probado contra Postgres real
+- [x] Middleware JWT (valida contra JWKS del auth-service, refresco cada 10 min)
+- [x] CRUD pacientes / médicos (DNI validado, 409 en duplicado)
+- [x] CRUD historias + intervenciones por disciplina (PUT upsert)
+- [x] Auditoría real en cada escritura (antes/después, usuario, IP)
+- [x] `GET /api/v1/reportes/resumen` (todos los agregados, verificados con datos reales)
+- [x] Paginación y filtros (`q`, médico, plan, objetivos, estado)
+- [x] `go build ./...`, `go vet`, `gofmt` sin errores
+- [x] Probado end-to-end contra Postgres real (mock JWKS + binario real):
+      401/404/409/422 confirmados, outbox poblado solo por triggers (nunca
+      por la API)
+
+Simplificaciones: RBAC fino por rol no bloquea a nivel HTTP en este MVP
+(según lo previsto en CONTRACT.md — toda escritura sí queda auditada por
+usuario); `GET /medicos` sin paginar; `historias` list incluye campos
+denormalizados (paciente_nombre, medico_nombre) para evitar N+1 en el
+frontend.
 
 ## Fase 4 — Espejo SQLite (worker)
 
