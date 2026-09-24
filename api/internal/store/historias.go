@@ -65,6 +65,17 @@ func (s *Store) GetHistoriaAny(ctx context.Context, id string) (model.Historia, 
 	return scanHistoria(row)
 }
 
+// GetLatestHistoriaByPaciente devuelve la historia activa mas reciente de
+// un paciente (usada por la importacion de atenciones, que solo recibe el
+// DNI del paciente en cada fila).
+func (s *Store) GetLatestHistoriaByPaciente(ctx context.Context, pacienteID string) (model.Historia, error) {
+	row := s.Pool.QueryRow(ctx, fmt.Sprintf(`
+		SELECT %s FROM historias
+		WHERE paciente_id = $1 AND deleted_at IS NULL
+		ORDER BY updated_at DESC LIMIT 1`, historiaCols), pacienteID)
+	return scanHistoria(row)
+}
+
 type HistoriaFilters struct {
 	Q                 string
 	MedicoID          string

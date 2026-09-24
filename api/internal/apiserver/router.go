@@ -105,6 +105,8 @@ func (s *Server) Router() http.Handler {
 			r.Use(s.Auth.Handler)
 
 			r.Get("/medicos", s.handleListMedicos)
+			r.Get("/usuarios", s.handleListUsuarios)
+			r.With(authn.RequireRoles("admin")).Post("/usuarios", s.handleCreateUsuario)
 
 			r.Get("/pacientes", s.handleListPacientes)
 			r.Get("/pacientes/by-dni/{dni}", s.handleGetPacienteByDNI)
@@ -115,11 +117,15 @@ func (s *Server) Router() http.Handler {
 			r.Get("/historias/{id}", s.handleGetHistoria)
 			r.Get("/historias/{id}/auditoria", s.handleListAuditoria)
 			r.Get("/historias/{id}/atenciones", s.handleListAtenciones)
+			r.Get("/auditoria/reciente", s.handleAuditoriaReciente)
 			r.With(authn.RequireRoles("admin", "medico")).Post("/historias", s.handleCreateHistoria)
 			r.With(authn.RequireRoles("admin", "medico")).Patch("/historias/{id}", s.handleUpdateHistoria)
 			r.With(authn.RequireRoles("admin", "medico")).Delete("/historias/{id}", s.handleDeleteHistoria)
 			r.With(s.requireIntervencionRole).Put("/historias/{id}/intervenciones/{disciplina}", s.handleUpsertIntervencion)
 			r.With(s.requireAtencionRole).Post("/historias/{id}/atenciones", s.handleCreateAtencion)
+			r.Delete("/historias/{id}/atenciones/{atencionId}", s.handleDeleteAtencion)
+			r.With(authn.RequireRoles("admin", "medico", "psicologia", "terapia_fisica", "nutricion")).
+				Post("/atenciones/import", s.handleImportAtenciones)
 
 			r.Get("/reportes/resumen", s.handleResumen)
 		})
