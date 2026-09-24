@@ -3,12 +3,15 @@
 import axios from 'axios'
 import type { Rol } from './types'
 
-// OJO: usar ?? y no || — VITE_AUTH_URL='' (string vacío, para pasar por el
-// proxy same-origin de Vite) es un valor valido, distinto de "no seteado".
-// Con || el string vacío es falsy y caeria al fallback absoluto, rompiendo
-// el proxy (el form de login navegaria directo a localhost:8080 en vez de
-// por el mismo origen que sirve la app).
-export const AUTH_URL = import.meta.env.VITE_AUTH_URL ?? 'http://localhost:8080'
+// Relativo por defecto (mismo origen): en dev, vite.config.ts hace proxy de
+// /oauth y /.well-known al auth-service; en produccion, el nginx del borde
+// enruta esas mismas rutas al contenedor hc_auth (ver docker-compose.prod.yml
+// y el bloque de nginx del despliegue). No hay build sin uno de los dos, asi
+// que un fallback absoluto a localhost:8080 nunca es correcto — ni siquiera
+// como "valor por defecto razonable", rompe cualquier host que no sea el
+// dev exacto. Solo seteamos VITE_AUTH_URL si el auth-service vive en un
+// origen realmente distinto (poco comun).
+export const AUTH_URL = import.meta.env.VITE_AUTH_URL ?? ''
 const CLIENT_ID = 'hc-web'
 const TOKENS_STORAGE_KEY = 'hc_auth_tokens'
 const PKCE_STORAGE_PREFIX = 'hc_pkce_'
