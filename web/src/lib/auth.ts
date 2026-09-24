@@ -87,6 +87,11 @@ function loadTokens(): AuthTokens | null {
 }
 
 let tokens: AuthTokens | null = loadTokens()
+// getUser() se usa como getSnapshot de useSyncExternalStore (ver
+// hooks/useAuth.ts), que exige una referencia ESTABLE mientras el estado no
+// cambie: decodificar el JWT en cada llamada devolvía un objeto nuevo cada
+// vez y provocaba un loop infinito de renders. Se cachea junto al token.
+let cachedUser: JwtUser | null = tokens ? decodeJwtPayload(tokens.access_token) : null
 const listeners = new Set<Listener>()
 
 function notify() {
@@ -99,6 +104,7 @@ export const authStore = {
   },
   setTokens(next: AuthTokens | null) {
     tokens = next
+    cachedUser = next ? decodeJwtPayload(next.access_token) : null
     try {
       if (next) localStorage.setItem(TOKENS_STORAGE_KEY, JSON.stringify(next))
       else localStorage.removeItem(TOKENS_STORAGE_KEY)
@@ -114,7 +120,7 @@ export const authStore = {
     return !!tokens?.access_token
   },
   getUser(): JwtUser | null {
-    return tokens ? decodeJwtPayload(tokens.access_token) : null
+    return cachedUser
   },
   subscribe(listener: Listener): () => void {
     listeners.add(listener)
