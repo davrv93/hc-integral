@@ -4,6 +4,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION IF NOT EXISTS unaccent;
+CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TYPE eval_estado AS ENUM ('SI', 'NO', 'PARCIAL');
 CREATE TYPE estado_revision AS ENUM ('en_revision', 'requiere_propuesta', 'completo');
@@ -27,8 +28,6 @@ CREATE TABLE usuarios (
     created_at    timestamptz NOT NULL DEFAULT now(),
     updated_at    timestamptz NOT NULL DEFAULT now()
 );
--- citext requiere la extensión; si no está disponible se usa text + índice funcional
-CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE medicos (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),

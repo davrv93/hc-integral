@@ -15,13 +15,23 @@ comentario de estado; se actualiza según el reporte de cada servicio.
 
 ## Fase 2 — Auth (Go, OAuth2 + PKCE)
 
-- [ ] `GET /oauth/authorize` (login server-rendered) — *ver reporte del agente*
-- [ ] `POST /oauth/token` (authorization_code + refresh_token, rotación)
-- [ ] `GET /.well-known/jwks.json` (RS256)
-- [ ] Bloqueo tras 5 intentos fallidos (15 min)
-- [ ] Seed de usuarios de desarrollo
-- [ ] `go build ./...` sin errores
-- [ ] Probado contra Postgres real
+- [x] `GET/POST /oauth/authorize` (login server-rendered, sesión in-memory)
+- [x] `POST /oauth/token` (authorization_code + refresh_token, rotación,
+      revocación de familia completa al detectar reuso)
+- [x] `GET /.well-known/jwks.json` (RS256)
+- [x] Bloqueo tras 5 intentos fallidos (15 min) — verificado con 429 real
+- [x] Seed de usuarios de desarrollo (idempotente)
+- [x] `go build ./...`, `go vet`, `gofmt` sin errores
+- [x] Probado end-to-end contra Postgres real: PKCE completo, rotación,
+      reuso detectado, logout, lockout, imagen Docker (`/healthz` ok, 78MB)
+
+Bug encontrado y corregido en `migrations/0001_init.sql`: `CREATE EXTENSION
+citext` estaba después de la tabla `usuarios` que lo usa — movido junto a
+las demás extensiones al inicio del archivo.
+
+Simplificaciones: sesión de login in-memory (un solo proceso), sin CSRF en
+el form (mismo origen, dev), sin rate-limit por IP además del lockout por
+cuenta.
 
 ## Fase 3 — API (Go, REST)
 
