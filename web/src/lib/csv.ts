@@ -64,7 +64,7 @@ function splitCsvLine(line: string, delimiter: string): string[] {
 }
 
 export function parseCsv(text: string): Record<string, string>[] {
-  const clean = text.replace(/^﻿/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const clean = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
   const lines = clean.split('\n').filter((l) => l.trim().length > 0)
   if (lines.length === 0) return []
   const delimiter = lines[0].includes(';') && !lines[0].includes(',') ? ';' : ','
