@@ -48,7 +48,14 @@ cd "$DIR"
 
 echo "-- git fetch + reset --hard origin/$BRANCH --"
 git fetch origin "$BRANCH"
-git checkout -B "$BRANCH" "origin/$BRANCH"
+# checkout -B falla si hay restos sin trackear en rutas que el commit
+# destino ya trackea (p.ej. un despliegue viejo por rsync); reset --hard ya
+# alcanza cuando el branch local existe, y no tiene ese problema.
+if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  git checkout "$BRANCH"
+else
+  git checkout -B "$BRANCH" "origin/$BRANCH"
+fi
 git reset --hard "origin/$BRANCH"
 
 echo "-- docker compose build (solo reconstruye lo que cambio) --"
