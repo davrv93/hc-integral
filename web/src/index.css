@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Figtree', system-ui, sans-serif;
+  }
+  body {
+    @apply bg-bg text-text antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+  *:focus-visible {
+    outline: none;
+    border-color: #0e6e66;
+    box-shadow: 0 0 0 3px rgba(14, 110, 102, 0.15);
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #dce4e2;
+    border-radius: 999px;
+  }
+}

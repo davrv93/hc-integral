@@ -48,13 +48,19 @@ Simplificaciones documentadas en `worker/README.md`: entrega at-least-once
 
 ## Fase 5 — Frontend (React + Tailwind)
 
-- [ ] Login con PKCE real contra auth-service
-- [ ] Sidebar + shell de la app
-- [ ] Dashboard con datos de `reportes/resumen`
-- [ ] Historias: búsqueda, filtros, paginación, archivar (SweetAlert2)
-- [ ] Detalle de HC: 5 pestañas, guardar cambios
-- [ ] Reportes: gráficos (Recharts)
-- [ ] `npm run build` sin errores
+- [x] Login con PKCE real (SubtleCrypto S256) contra auth-service
+- [x] Sidebar + shell de la app
+- [x] Dashboard con datos de `reportes/resumen` (donut, barras, plazos)
+- [x] Historias: búsqueda debounced, filtros, paginación server-side,
+      archivar con SweetAlert2 + toast
+- [x] Detalle de HC: 5 pestañas, react-hook-form + zod, guarda solo campos
+      modificados, historial de auditoría real
+- [x] Reportes: LineChart, barras por disciplina, tabla por médico
+- [x] `npm run build` (tsc + vite), `npm run lint`, `npm run dev` — todo limpio
+
+Placeholders explícitos (fuera de alcance de esta pasada, no son bugs):
+"Actividad reciente" del dashboard, exportar Excel/PDF, CRUD de Pacientes y
+de Usuarios. Bundle sin code-splitting (~301KB gzip) — ver `web/README.md`.
 
 ## Fase 6 — Integración
 
