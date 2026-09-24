@@ -18,12 +18,16 @@ import { EvaluacionTab } from '@/components/historia/EvaluacionTab'
 import { PropuestaTab } from '@/components/historia/PropuestaTab'
 import { SeguimientoTab } from '@/components/historia/SeguimientoTab'
 import { HistorialTab } from '@/components/historia/HistorialTab'
+import { EvolucionTab } from '@/components/historia/EvolucionTab'
+import { AtencionesTab } from '@/components/historia/AtencionesTab'
 
 const TABS = [
   { value: 'identificacion', label: 'Identificación' },
+  { value: 'atenciones', label: 'Atenciones' },
   { value: 'evaluacion', label: 'Evaluación' },
   { value: 'propuesta', label: 'Propuesta interdisciplinaria' },
   { value: 'seguimiento', label: 'Seguimiento' },
+  { value: 'evolucion', label: 'Evolución' },
   { value: 'historial', label: 'Historial' },
 ]
 
@@ -149,9 +153,11 @@ export function HistoriaDetalle() {
           <Tabs tabs={TABS} value={tab} onChange={setTab} />
           <div className="p-6">
             {tab === 'identificacion' && <IdentificacionTab historia={historia} />}
+            {tab === 'atenciones' && <AtencionesTab historiaId={historiaId} />}
             {tab === 'evaluacion' && <EvaluacionTab />}
             {tab === 'propuesta' && <PropuestaTab historiaId={historiaId} />}
             {tab === 'seguimiento' && <SeguimientoTab />}
+            {tab === 'evolucion' && <EvolucionTab historiaId={historiaId} />}
             {tab === 'historial' && <HistorialTab historiaId={historiaId} />}
           </div>
         </div>
@@ -163,7 +169,7 @@ export function HistoriaDetalle() {
             </span>
             <Button type="submit" loading={saveMutation.isPending} disabled={!methods.formState.isDirty}>
               <Save size={16} />
-              Guardar cambios
+              Registrar atencion
             </Button>
           </div>
         </div>

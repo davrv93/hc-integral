@@ -74,3 +74,20 @@ func Rol(ctx context.Context) string {
 	v, _ := ctx.Value(ctxRol).(string)
 	return v
 }
+
+func RequireRoles(roles ...string) func(http.Handler) http.Handler {
+	allowed := make(map[string]struct{}, len(roles))
+	for _, role := range roles {
+		allowed[role] = struct{}{}
+	}
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			rol := Rol(r.Context())
+			if _, ok := allowed[rol]; !ok {
+				httpx.Forbidden(w, "insufficient role for this operation")
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}

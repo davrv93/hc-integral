@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { Archive, Eye, Search } from 'lucide-react'
-import { deleteHistoria, fetchHistorias, fetchMedicos } from '@/lib/endpoints'
+import { Archive, Eye, Plus, Search, X } from 'lucide-react'
+import { createHistoria, deleteHistoria, fetchHistorias, fetchMedicos, fetchPacientes } from '@/lib/endpoints'
 import type { EstadoRevision } from '@/lib/types'
 import { ESTADO_REVISION_LABEL, ESTADO_REVISION_ORDER, formatDate } from '@/lib/labels'
 import { EstadoRevisionBadge, EvalBadge } from '@/components/ui/Badge'
@@ -29,9 +29,19 @@ export function Historias() {
   const [tab, setTab] = useState<EstadoRevision | 'todos'>('todos')
   const [medicoId, setMedicoId] = useState('')
   const [page, setPage] = useState(1)
+  const [showCreate, setShowCreate] = useState(false)
+  const [pacienteSearch, setPacienteSearch] = useState('')
+  const [newHistoria, setNewHistoria] = useState({ paciente_id: '', medico_id: '', diagnostico: '' })
   const pageSize = 20
+  const debouncedPacienteSearch = useDebounce(pacienteSearch, 300)
 
   const medicosQuery = useQuery({ queryKey: ['medicos'], queryFn: fetchMedicos })
+
+  const pacientesQuery = useQuery({
+    queryKey: ['pacientes', 'historia-create', { q: debouncedPacienteSearch }],
+    queryFn: () => fetchPacientes(debouncedPacienteSearch, 1, 8),
+    enabled: showCreate,
+  })
 
   const historiasQuery = useQuery({
     queryKey: ['historias', { q: debouncedSearch, medicoId, tab, page, pageSize }],
@@ -80,9 +90,30 @@ export function Historias() {
     },
   })
 
+  const createMutation = useMutation({
+    mutationFn: createHistoria,
+    onSuccess: (historia) => {
+      toastSuccess('Historia clinica creada.')
+      void queryClient.invalidateQueries({ queryKey: ['historias'] })
+      navigate(`/historias/${historia.id}`)
+    },
+    onError: (err) => {
+      toastError(extractApiError(err).message || 'No se pudo crear la historia.')
+    },
+  })
+
   async function handleArchive(id: string, label: string) {
     const confirmed = await confirmArchivar(label)
     if (confirmed) archiveMutation.mutate(id)
+  }
+
+  function handleCreate() {
+    const diagnostico = newHistoria.diagnostico.trim()
+    if (!newHistoria.paciente_id || !newHistoria.medico_id || !diagnostico) {
+      toastError('Selecciona paciente, medico y diagnostico.')
+      return
+    }
+    createMutation.mutate({ ...newHistoria, diagnostico })
   }
 
   const totalTodos = useMemo(() => {
@@ -96,10 +127,136 @@ export function Historias() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-serif text-2xl font-semibold text-text">Historias clínicas</h1>
-        <p className="text-sm text-text-muted">Busca, filtra y gestiona las historias registradas.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-2xl font-semibold text-text">Historias clínicas</h1>
+          <p className="text-sm text-text-muted">Busca, filtra y gestiona las historias registradas.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowCreate((v) => !v)}
+          className="inline-flex min-h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover"
+        >
+          <Plus size={16} />
+          Nueva historia
+        </button>
       </div>
+
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 px-4 py-8">
+          <div className="max-h-[calc(100vh-64px)] w-full max-w-4xl overflow-y-auto rounded-card border border-border bg-surface p-5 shadow-xl">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-serif text-xl font-semibold text-text">Nueva historia clinica</h2>
+                <p className="text-sm text-text-muted">Busca al paciente por DNI, seleccionalo y registra el diagnostico inicial.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:bg-bg hover:text-text"
+                aria-label="Cerrar"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-text-soft">DNI del paciente</span>
+                <div className="relative">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                  <input
+                    value={pacienteSearch}
+                    onChange={(e) => {
+                      setPacienteSearch(e.target.value.replace(/\D/g, '').slice(0, 8))
+                      setNewHistoria((h) => ({ ...h, paciente_id: '' }))
+                    }}
+                    placeholder="Ej. 48054725"
+                    inputMode="numeric"
+                    className="min-h-control w-full rounded-control border border-border pl-9 pr-3 text-text"
+                    autoFocus
+                  />
+                </div>
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-text-soft">Medico responsable</span>
+                <select
+                  value={newHistoria.medico_id}
+                onChange={(e) => setNewHistoria((h) => ({ ...h, medico_id: e.target.value }))}
+                className="min-h-control rounded-control border border-border bg-white px-3 text-text"
+              >
+                <option value="">Seleccionar medico</option>
+                {medicosQuery.data?.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.titulo} {m.nombre}
+                  </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="mt-4 rounded-card border border-border">
+              <div className="border-b border-[#EEF2F1] px-4 py-3 text-sm font-medium text-text-soft">Resultados</div>
+              <div className="max-h-56 overflow-y-auto">
+                {pacientesQuery.isLoading ? (
+                  <div className="p-4 text-sm text-text-muted">Buscando...</div>
+                ) : !pacientesQuery.data || pacientesQuery.data.data.length === 0 ? (
+                  <div className="p-4 text-sm text-text-muted">Ingresa un DNI para encontrar al paciente.</div>
+                ) : (
+                  pacientesQuery.data.data.map((p) => {
+                    const selected = newHistoria.paciente_id === p.id
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setNewHistoria((h) => ({ ...h, paciente_id: p.id }))}
+                        className={`flex w-full items-center justify-between gap-3 border-b border-[#EEF2F1] px-4 py-3 text-left text-sm last:border-0 ${
+                          selected ? 'bg-primary-soft text-primary' : 'hover:bg-bg'
+                        }`}
+                      >
+                        <span>
+                          <span className="font-medium">{p.apellidos}, {p.nombres}</span>
+                          <span className="ml-2 text-text-muted">{p.dni}</span>
+                        </span>
+                        {selected && <span className="text-xs font-medium">Seleccionado</span>}
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            <label className="mt-4 flex flex-col gap-1 text-sm">
+              <span className="font-medium text-text-soft">Diagnostico inicial</span>
+              <textarea
+                value={newHistoria.diagnostico}
+                onChange={(e) => setNewHistoria((h) => ({ ...h, diagnostico: e.target.value }))}
+                rows={3}
+                className="rounded-control border border-border px-3 py-2 text-text"
+              />
+            </label>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="inline-flex min-h-control items-center justify-center rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleCreate}
+                disabled={createMutation.isPending}
+                className="inline-flex min-h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Plus size={16} />
+                Crear e ingresar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         {TABS.map((t) => {

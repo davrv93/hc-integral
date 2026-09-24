@@ -8,8 +8,8 @@ import { SerieMensualChart } from '@/components/charts/SerieMensualChart'
 import { HorizontalBarList } from '@/components/charts/HorizontalBarList'
 import { StackedBarRow } from '@/components/charts/StackedBarRow'
 import { Button } from '@/components/ui/Button'
-import { toastInfo } from '@/lib/alerts'
-import type { Disciplina } from '@/lib/types'
+import { toastError, toastSuccess } from '@/lib/alerts'
+import type { Disciplina, ReporteResumen } from '@/lib/types'
 
 const CHART_COLORS = ['#0A8F80', '#3E6FC2', '#C27A1A', '#2B7FD0', '#A04A9C']
 const DISCIPLINAS: Disciplina[] = ['medicina', 'psicologia', 'terapia_fisica', 'nutricion']
@@ -27,6 +27,105 @@ function desdeFromPeriodo(periodo: string): string | undefined {
   const d = new Date()
   d.setMonth(d.getMonth() - months)
   return d.toISOString().slice(0, 10)
+}
+
+function csvCell(value: string | number): string {
+  const raw = String(value)
+  return `"${raw.replace(/"/g, '""')}"`
+}
+
+function downloadTextFile(filename: string, mime: string, content: string) {
+  const blob = new Blob([content], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function escapeHtml(value: string | number): string {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function buildResumenCsv(resumen: ReporteResumen): string {
+  const rows: (string | number)[][] = [
+    ['Seccion', 'Indicador', 'Valor'],
+    ['Estado', ESTADO_REVISION_LABEL.en_revision, resumen.por_estado.en_revision],
+    ['Estado', ESTADO_REVISION_LABEL.requiere_propuesta, resumen.por_estado.requiere_propuesta],
+    ['Estado', ESTADO_REVISION_LABEL.completo, resumen.por_estado.completo],
+    ['Plan de trabajo', 'SI', resumen.plan_trabajo.SI],
+    ['Plan de trabajo', 'NO', resumen.plan_trabajo.NO],
+    ['Plan de trabajo', 'PARCIAL', resumen.plan_trabajo.PARCIAL],
+    ['Objetivos', 'SI', resumen.objetivos.SI],
+    ['Objetivos', 'NO', resumen.objetivos.NO],
+    ['Objetivos', 'PARCIAL', resumen.objetivos.PARCIAL],
+    ...DISCIPLINAS.map((d) => ['Intervenciones', DISCIPLINA_LABEL[d], resumen.intervenciones_por_disciplina[d] ?? 0]),
+    [],
+    ['Medico', 'Total', ESTADO_REVISION_LABEL.en_revision, ESTADO_REVISION_LABEL.requiere_propuesta, ESTADO_REVISION_LABEL.completo],
+    ...resumen.por_medico.map((m) => [m.nombre, m.total, m.en_revision, m.requiere_propuesta, m.completo]),
+    [],
+    ['Mes', 'Creadas', 'Completadas'],
+    ...resumen.serie_mensual.map((m) => [m.mes, m.creadas, m.completadas]),
+  ]
+  return rows.map((row) => row.map(csvCell).join(',')).join('\n')
+}
+
+function printResumen(resumen: ReporteResumen) {
+  const printable = window.open('', '_blank', 'width=960,height=720')
+  if (!printable) {
+    toastError('No se pudo abrir la ventana de impresion.')
+    return
+  }
+  const medicoRows = resumen.por_medico
+    .map(
+      (m) =>
+        `<tr><td>${escapeHtml(m.nombre)}</td><td>${m.total}</td><td>${m.en_revision}</td><td>${m.requiere_propuesta}</td><td>${m.completo}</td></tr>`
+    )
+    .join('')
+  const serieRows = resumen.serie_mensual
+    .map((m) => `<tr><td>${m.mes}</td><td>${m.creadas}</td><td>${m.completadas}</td></tr>`)
+    .join('')
+
+  printable.document.write(`<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Reporte HC Integral</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #18302F; margin: 32px; }
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    h2 { font-size: 16px; margin: 24px 0 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+    th, td { border-bottom: 1px solid #D8E2E0; padding: 8px; text-align: left; }
+    th { background: #F2F6F5; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .metric { border: 1px solid #D8E2E0; padding: 12px; }
+    .metric strong { display: block; font-size: 22px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Reporte HC Integral</h1>
+  <div>Generado: ${new Date().toLocaleString()}</div>
+  <div class="grid">
+    <div class="metric">${ESTADO_REVISION_LABEL.en_revision}<strong>${resumen.por_estado.en_revision}</strong></div>
+    <div class="metric">${ESTADO_REVISION_LABEL.requiere_propuesta}<strong>${resumen.por_estado.requiere_propuesta}</strong></div>
+    <div class="metric">${ESTADO_REVISION_LABEL.completo}<strong>${resumen.por_estado.completo}</strong></div>
+  </div>
+  <h2>Desglose por medico</h2>
+  <table><thead><tr><th>Medico</th><th>Total</th><th>${ESTADO_REVISION_LABEL.en_revision}</th><th>${ESTADO_REVISION_LABEL.requiere_propuesta}</th><th>${ESTADO_REVISION_LABEL.completo}</th></tr></thead><tbody>${medicoRows}</tbody></table>
+  <h2>Serie mensual</h2>
+  <table><thead><tr><th>Mes</th><th>Creadas</th><th>Completadas</th></tr></thead><tbody>${serieRows}</tbody></table>
+</body>
+</html>`)
+  printable.document.close()
+  printable.focus()
+  printable.print()
 }
 
 export function Reportes() {
@@ -52,8 +151,21 @@ export function Reportes() {
       }))
     : []
 
-  function stub(label: string) {
-    toastInfo(`Exportar ${label}: próximamente.`)
+  function exportCsv() {
+    if (!resumen) {
+      toastError('No hay datos cargados para exportar.')
+      return
+    }
+    downloadTextFile('reporte-hc-integral.csv', 'text/csv;charset=utf-8', buildResumenCsv(resumen))
+    toastSuccess('Reporte CSV descargado.')
+  }
+
+  function exportPdf() {
+    if (!resumen) {
+      toastError('No hay datos cargados para exportar.')
+      return
+    }
+    printResumen(resumen)
   }
 
   return (
@@ -64,11 +176,11 @@ export function Reportes() {
           <p className="text-sm text-text-muted">Indicadores agregados de historias clínicas.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => stub('Excel')}>
+          <Button variant="secondary" onClick={exportCsv}>
             <FileSpreadsheet size={16} />
             Excel
           </Button>
-          <Button variant="secondary" onClick={() => stub('PDF')}>
+          <Button variant="secondary" onClick={exportPdf}>
             <Download size={16} />
             PDF
           </Button>

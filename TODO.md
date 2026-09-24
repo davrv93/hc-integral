@@ -11,7 +11,8 @@ comentario de estado; se actualiza según el reporte de cada servicio.
 - [x] Contrato de servicios (`docs/CONTRACT.md`) y sistema visual
       (`docs/design-system.md`).
 - [x] `docker-compose.yml` (Postgres) y `.env.example`.
-- [ ] CI (lint + tests) — no implementado en esta pasada.
+- [x] CI (lint + tests) — `.github/workflows/ci.yml` ejecuta Go
+      test/vet/build en auth/api/worker y lint/build del frontend.
 
 ## Fase 2 — Auth (Go, OAuth2 + PKCE)
 
@@ -69,16 +70,20 @@ Simplificaciones documentadas en `worker/README.md`: entrega at-least-once
 - [x] Login con PKCE real (SubtleCrypto S256) contra auth-service
 - [x] Sidebar + shell de la app
 - [x] Dashboard con datos de `reportes/resumen` (donut, barras, plazos)
-- [x] Historias: búsqueda debounced, filtros, paginación server-side,
-      archivar con SweetAlert2 + toast
+- [x] Historias: creación con modal de búsqueda de paciente por DNI,
+      selección de médico y diagnóstico; búsqueda debounced, filtros,
+      paginación server-side, archivar con SweetAlert2 + toast
 - [x] Detalle de HC: 5 pestañas, react-hook-form + zod, guarda solo campos
-      modificados, historial de auditoría real
+      modificados como atención, historial de auditoría real y gráfico de
+      evolución por snapshots de auditoría
 - [x] Reportes: LineChart, barras por disciplina, tabla por médico
 - [x] `npm run build` (tsc + vite), `npm run lint`, `npm run dev` — todo limpio
 
 Placeholders explícitos (fuera de alcance de esta pasada, no son bugs):
-"Actividad reciente" del dashboard, exportar Excel/PDF, CRUD de Pacientes y
-de Usuarios. Bundle sin code-splitting (~301KB gzip) — ver `web/README.md`.
+"Actividad reciente" del dashboard y CRUD de Médicos/Usuarios. Pacientes ya
+tiene alta, búsqueda y paginación sobre la API existente; Reportes descarga
+CSV y abre una vista imprimible para PDF. Bundle sin code-splitting
+(~304KB gzip) — ver `web/README.md`.
 
 ## Fase 6 — Integración
 
@@ -94,11 +99,14 @@ de Usuarios. Bundle sin code-splitting (~301KB gzip) — ver `web/README.md`.
 
 ## Pendiente fuera de esta pasada (explícito, no es olvido)
 
-- [ ] RBAC fino por disciplina (hoy: cualquier rol autenticado puede escribir;
-      falta bloquear por rol en el middleware).
+- [x] RBAC básico por rol/disciplina: admin/médico escriben historias y
+      pacientes; cada intervención solo la escribe admin o su disciplina.
 - [ ] Tokens en `localStorage` en el frontend — mover a cookie httpOnly + BFF
       antes de producción.
-- [ ] Exportación real a Excel/PDF en Reportes (hoy: stub).
-- [ ] Pantallas de Pacientes y Médicos/usuarios (catálogos) como CRUD completo.
+- [x] Exportación real en Reportes: CSV compatible con Excel y vista imprimible
+      para guardar/imprimir como PDF.
+- [~] Pantallas de Pacientes y Médicos/usuarios: Pacientes tiene alta,
+      búsqueda y paginación; Médicos/usuarios queda en solo lectura porque la
+      API aún no expone endpoints de escritura.
 - [ ] Cifrado en reposo del espejo SQLite si sale del servidor.
 - [ ] Tests automatizados end-to-end (Playwright) y CI.

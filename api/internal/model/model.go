@@ -32,6 +32,23 @@ type Intervencion struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 }
 
+type Atencion struct {
+	ID                  string    `json:"id"`
+	HistoriaID          string    `json:"historia_id"`
+	Disciplina          string    `json:"disciplina"`
+	Fecha               time.Time `json:"fecha"`
+	Motivo              string    `json:"motivo"`
+	Detalle             string    `json:"detalle"`
+	PlanTrabajoEstado   *string   `json:"plan_trabajo_estado"`
+	ObjetivosEstado     *string   `json:"objetivos_estado"`
+	Necesidades         *string   `json:"necesidades,omitempty"`
+	ObjetivosPropuestos *string   `json:"objetivos_propuestos,omitempty"`
+	PlanActual          *string   `json:"plan_actual,omitempty"`
+	Observaciones       *string   `json:"observaciones,omitempty"`
+	ResponsableID       *string   `json:"responsable_id,omitempty"`
+	CreatedAt           time.Time `json:"created_at"`
+}
+
 type Historia struct {
 	ID                  string    `json:"id"`
 	Correlativo         int       `json:"correlativo"`
@@ -56,6 +73,7 @@ type Historia struct {
 	Paciente       *Paciente      `json:"paciente,omitempty"`
 	Medico         *Medico        `json:"medico,omitempty"`
 	Intervenciones []Intervencion `json:"intervenciones,omitempty"`
+	Atenciones     []Atencion     `json:"atenciones,omitempty"`
 	// Convenience fields for list views (not part of the base table).
 	PacienteNombre *string `json:"paciente_nombre,omitempty"`
 	PacienteDNI    *string `json:"paciente_dni,omitempty"`
