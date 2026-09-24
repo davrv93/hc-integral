@@ -1,15 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { BarChart3, FileText, Home, LogOut, Stethoscope, Users } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { useAuthUser } from '@/hooks/useAuth'
 import { logout } from '@/lib/auth'
-
-const NAV_ITEMS = [
-  { to: '/', label: 'Inicio', icon: Home, end: true },
-  { to: '/historias', label: 'Historias clínicas', icon: FileText },
-  { to: '/pacientes', label: 'Pacientes', icon: Users },
-  { to: '/reportes', label: 'Reportes', icon: BarChart3 },
-  { to: '/medicos-usuarios', label: 'Médicos y usuarios', icon: Stethoscope },
-] as const
+import { NAV_ITEMS } from './navItems'
 
 function initials(name: string): string {
   return name
@@ -20,6 +13,9 @@ function initials(name: string): string {
     .join('')
 }
 
+// Solo escritorio (md+): en mobile la navegación vive en MobileTabBar, una
+// barra de iconos fija abajo, para que el contenido nunca compita con el
+// sidebar por ancho en pantallas chicas.
 export function Sidebar() {
   const user = useAuthUser()
   const navigate = useNavigate()
@@ -30,7 +26,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-border bg-surface">
+    <aside className="hidden h-full w-[240px] shrink-0 flex-col border-r border-border bg-surface md:flex">
       <div className="flex items-center gap-2.5 px-5 py-6">
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-control bg-primary text-white font-serif font-semibold">
           HC
