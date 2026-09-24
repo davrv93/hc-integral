@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Activity, Brain, HeartPulse, Salad, ShieldCheck } from 'lucide-react'
-import { startLogin } from '@/lib/auth'
-import { toastError } from '@/lib/alerts'
+import { AUTH_URL, prepareAuthorizeRequest, type AuthorizeRequest } from '@/lib/auth'
 
 const DISCIPLINES = [
   { label: 'Medicina', icon: HeartPulse },
@@ -12,17 +11,16 @@ const DISCIPLINES = [
 ] as const
 
 export function Login() {
-  const [loading, setLoading] = useState(false)
+  const [authReq, setAuthReq] = useState<AuthorizeRequest | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  async function handleLogin() {
-    setLoading(true)
-    try {
-      await startLogin()
-    } catch {
-      toastError('No se pudo iniciar el proceso de autenticación. Intenta nuevamente.')
-      setLoading(false)
-    }
-  }
+  // PKCE (verifier/challenge/state) se genera una vez al montar la página,
+  // no al enviar el formulario: el submit es un POST de navegador real
+  // hacia el auth-service (sin fetch/XHR), para que el flujo funcione
+  // igual con o sin JavaScript de por medio.
+  useEffect(() => {
+    prepareAuthorizeRequest().then(setAuthReq)
+  }, [])
 
   return (
     <div className="flex min-h-screen bg-bg">
@@ -85,31 +83,68 @@ export function Login() {
 
           <h2 className="font-serif text-2xl font-semibold text-text">Bienvenido de nuevo</h2>
           <p className="mt-1.5 text-sm text-text-muted">
-            Ingresa con tu cuenta institucional para continuar.
+            Ingresa con tu usuario y contraseña para continuar.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3">
+          <form
+            method="POST"
+            action={`${AUTH_URL}/oauth/authorize`}
+            onSubmit={() => setSubmitting(true)}
+            className="mt-8 flex flex-col gap-1"
+          >
+            {authReq && (
+              <>
+                <input type="hidden" name="client_id" value={authReq.client_id} />
+                <input type="hidden" name="redirect_uri" value={authReq.redirect_uri} />
+                <input type="hidden" name="code_challenge" value={authReq.code_challenge} />
+                <input
+                  type="hidden"
+                  name="code_challenge_method"
+                  value={authReq.code_challenge_method}
+                />
+                <input type="hidden" name="state" value={authReq.state} />
+              </>
+            )}
+
+            <label htmlFor="email" className="mb-1.5 text-sm font-semibold text-text">
+              Usuario
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="text"
+              required
+              autoFocus
+              autoComplete="username"
+              placeholder="usuario o correo"
+              className="mb-4 min-h-control rounded-control border border-border bg-white px-3 text-sm text-text placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+            />
+
+            <label htmlFor="password" className="mb-1.5 text-sm font-semibold text-text">
+              Contraseña
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              placeholder="••••••••"
+              className="mb-6 min-h-control rounded-control border border-border bg-white px-3 text-sm text-text focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+            />
+
             <button
-              type="button"
-              onClick={handleLogin}
-              disabled={loading}
+              type="submit"
+              disabled={!authReq || submitting}
               className="inline-flex min-h-control items-center justify-center rounded-control bg-primary px-4 text-sm font-semibold text-white transition-colors duration-150 ease-out hover:bg-primary-hover disabled:opacity-60"
             >
-              {loading ? 'Redirigiendo…' : 'Ingresar'}
+              {submitting ? 'Ingresando…' : 'Ingresar'}
             </button>
-            <button
-              type="button"
-              onClick={handleLogin}
-              disabled={loading}
-              className="inline-flex min-h-control items-center justify-center rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 ease-out hover:bg-bg disabled:opacity-60"
-            >
-              Continuar con cuenta institucional
-            </button>
-          </div>
+          </form>
 
-          <p className="mt-8 text-center text-xs text-text-muted">
-            El formulario de usuario y contraseña se completa en el portal de autenticación
-            institucional.
+          <p className="mt-6 flex items-center gap-1.5 text-center text-xs text-text-muted">
+            <ShieldCheck size={14} className="shrink-0" />
+            Autenticación OAuth2 + PKCE, sin compartir tu contraseña con la app.
           </p>
         </motion.div>
       </div>

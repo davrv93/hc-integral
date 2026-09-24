@@ -124,23 +124,36 @@ export const authStore = {
 
 // ---------- Flujo de login ----------
 
-/** Inicia el flujo PKCE: genera verifier/challenge/state y redirige al auth-service. */
-export async function startLogin(): Promise<void> {
+export interface AuthorizeRequest {
+  response_type: 'code'
+  client_id: string
+  redirect_uri: string
+  code_challenge: string
+  code_challenge_method: 'S256'
+  state: string
+}
+
+/**
+ * Genera verifier/challenge/state y guarda el verifier (para el
+ * intercambio posterior en /callback). Devuelve los campos que el
+ * formulario de login (Login.tsx) envia como hidden inputs en un POST de
+ * navegador real a `${AUTH_URL}/oauth/authorize` — el usuario y la
+ * contraseña van directo en ese mismo POST, sin pasar por el frontend.
+ */
+export async function prepareAuthorizeRequest(): Promise<AuthorizeRequest> {
   const verifier = generateCodeVerifier()
   const state = generateState()
   const challenge = await generateCodeChallenge(verifier)
   sessionStorage.setItem(PKCE_STORAGE_PREFIX + state, verifier)
 
-  const redirectUri = `${window.location.origin}/callback`
-  const params = new URLSearchParams({
+  return {
     response_type: 'code',
     client_id: CLIENT_ID,
-    redirect_uri: redirectUri,
+    redirect_uri: `${window.location.origin}/callback`,
     code_challenge: challenge,
     code_challenge_method: 'S256',
     state,
-  })
-  window.location.href = `${AUTH_URL}/oauth/authorize?${params.toString()}`
+  }
 }
 
 export function consumeVerifier(state: string): string | null {

@@ -77,7 +77,7 @@ var loginTemplate = template.Must(template.New("login").Parse(`<!doctype html>
     margin-bottom: 6px;
     color: var(--text);
   }
-  input[type=email], input[type=password] {
+  input[type=text], input[type=password] {
     width: 100%;
     min-height: 44px;
     padding: 10px 12px;
@@ -129,8 +129,8 @@ var loginTemplate = template.Must(template.New("login").Parse(`<!doctype html>
       <input type="hidden" name="code_challenge" value="{{.CodeChallenge}}">
       <input type="hidden" name="code_challenge_method" value="{{.CodeChallengeMethod}}">
       <input type="hidden" name="state" value="{{.State}}">
-      <label for="email">Correo</label>
-      <input type="email" id="email" name="email" value="{{.Email}}" required autofocus>
+      <label for="email">Usuario</label>
+      <input type="text" id="email" name="email" value="{{.Email}}" required autofocus>
       <label for="password">Contraseña</label>
       <input type="password" id="password" name="password" required>
       <button type="submit">Ingresar</button>
