@@ -82,10 +82,15 @@ de Usuarios. Bundle sin code-splitting (~301KB gzip) — ver `web/README.md`.
 
 ## Fase 6 — Integración
 
-- [ ] `docker compose up` levanta Postgres, migración se aplica
-- [ ] auth + api + worker corren juntos contra la misma DB
-- [ ] Flujo completo probado: login → crear/editar HC → aparece en reportes → aparece en espejo SQLite
-- [ ] README raíz con instrucciones de arranque
+- [x] `docker compose up` levanta Postgres, migración se aplica limpia
+      (recreado desde cero tras el fix de `citext`, 10 tablas creadas sin error)
+- [x] auth + api + worker corren juntos contra la misma DB (verificado con
+      los tres binarios reales simultáneos, no mocks)
+- [x] Flujo completo probado en vivo: login PKCE real → JWT → `POST
+      /pacientes` + `POST /historias` vía API → trigger llena `outbox` →
+      worker replica a SQLite en <4s → `GET /reportes/resumen` refleja el
+      nuevo registro correctamente
+- [x] README raíz con instrucciones de arranque (`README.md`)
 
 ## Pendiente fuera de esta pasada (explícito, no es olvido)
 
