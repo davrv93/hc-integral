@@ -1,7 +1,12 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { authStore, refreshTokens } from './auth'
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081'
+// Empty string = relative to the page's own origin, routed through the
+// Vite dev proxy (vite.config.ts) to the real api-service. This lets the
+// app be reached through any hostname (localhost, LAN IP, a tunnel) without
+// baking one origin into the built bundle. Set VITE_API_URL only for a
+// deployment where the api-service is NOT reachable via this same origin.
+export const API_URL = import.meta.env.VITE_API_URL || ''
 
 export const api = axios.create({ baseURL: API_URL })
 
