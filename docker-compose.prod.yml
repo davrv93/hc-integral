@@ -1,0 +1,76 @@
+# Stack de producción de HC, AISLADO del resto del servidor: red propia
+# (hc_net), sin puertos publicados al host. Sólo el nginx del borde
+# (app_nginx), conectado a hc_net aparte, llega a estos contenedores por
+# nombre. No toca boticalima, emanuelpharma, ni ningún otro proyecto.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hc_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - hc_pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks: [hc_net]
+
+  auth:
+    build: ./auth
+    image: hc-auth:latest
+    container_name: hc_auth
+    restart: unless-stopped
+    env_file: .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - hc_auth_keys:/app/keys
+    networks: [hc_net]
+
+  api:
+    build: ./api
+    image: hc-api:latest
+    container_name: hc_api
+    restart: unless-stopped
+    env_file: .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [hc_net]
+
+  worker:
+    build: ./worker
+    image: hc-worker:latest
+    container_name: hc_worker
+    restart: unless-stopped
+    env_file: .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - hc_worker_data:/app/data
+    networks: [hc_net]
+
+  web:
+    build: ./web
+    image: hc-web:latest
+    container_name: hc_web
+    restart: unless-stopped
+    networks: [hc_net]
+
+networks:
+  hc_net:
+    name: hc_net
+
+volumes:
+  hc_pgdata:
+  hc_auth_keys:
+  hc_worker_data:
