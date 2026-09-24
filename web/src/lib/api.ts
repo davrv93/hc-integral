@@ -6,7 +6,7 @@ import { authStore, refreshTokens } from './auth'
 // app be reached through any hostname (localhost, LAN IP, a tunnel) without
 // baking one origin into the built bundle. Set VITE_API_URL only for a
 // deployment where the api-service is NOT reachable via this same origin.
-export const API_URL = import.meta.env.VITE_API_URL || ''
+export const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 export const api = axios.create({ baseURL: API_URL })
 

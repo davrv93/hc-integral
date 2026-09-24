@@ -3,7 +3,12 @@
 import axios from 'axios'
 import type { Rol } from './types'
 
-export const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:8080'
+// OJO: usar ?? y no || — VITE_AUTH_URL='' (string vacío, para pasar por el
+// proxy same-origin de Vite) es un valor valido, distinto de "no seteado".
+// Con || el string vacío es falsy y caeria al fallback absoluto, rompiendo
+// el proxy (el form de login navegaria directo a localhost:8080 en vez de
+// por el mismo origen que sirve la app).
+export const AUTH_URL = import.meta.env.VITE_AUTH_URL ?? 'http://localhost:8080'
 const CLIENT_ID = 'hc-web'
 const TOKENS_STORAGE_KEY = 'hc_auth_tokens'
 const PKCE_STORAGE_PREFIX = 'hc_pkce_'
