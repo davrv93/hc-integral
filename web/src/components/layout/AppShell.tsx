@@ -3,7 +3,7 @@ import { Sidebar } from './Sidebar'
 
 export function AppShell() {
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex h-screen overflow-hidden bg-bg">
       <Sidebar />
       <main className="flex-1 overflow-y-auto px-7 py-8">
         <div className="mx-auto max-w-[1200px]">

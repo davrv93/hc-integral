@@ -30,7 +30,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-[240px] shrink-0 flex-col border-r border-border bg-surface">
+    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-border bg-surface">
       <div className="flex items-center gap-2.5 px-5 py-6">
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-control bg-primary text-white font-serif font-semibold">
           HC
@@ -38,7 +38,7 @@ export function Sidebar() {
         <span className="font-serif text-lg font-semibold text-text">HC Integral</span>
       </div>
 
-      <nav className="flex-1 px-3">
+      <nav className="flex-1 overflow-y-auto px-3">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => (
             <li key={item.to}>
