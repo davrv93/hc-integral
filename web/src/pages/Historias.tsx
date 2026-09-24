@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { Archive, Eye, Plus, Search, X } from 'lucide-react'
+import { Archive, Download, Eye, Plus, Search, X } from 'lucide-react'
 import { createHistoria, deleteHistoria, fetchHistorias, fetchMedicos, fetchPacientes } from '@/lib/endpoints'
-import type { EstadoRevision } from '@/lib/types'
-import { ESTADO_REVISION_LABEL, ESTADO_REVISION_ORDER, formatDate } from '@/lib/labels'
+import type { EstadoRevision, Historia } from '@/lib/types'
+import { ESTADO_REVISION_LABEL, ESTADO_REVISION_ORDER, EVAL_ESTADO_LABEL, formatDate } from '@/lib/labels'
 import { EstadoRevisionBadge, EvalBadge } from '@/components/ui/Badge'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -12,6 +12,19 @@ import { Pagination } from '@/components/ui/Pagination'
 import { useDebounce } from '@/hooks/useDebounce'
 import { confirmArchivar, toastError, toastSuccess } from '@/lib/alerts'
 import { extractApiError } from '@/lib/api'
+import { downloadCsv } from '@/lib/csv'
+
+function pacienteNombre(h: Historia): string {
+  return h.paciente_nombre ?? (h.paciente ? `${h.paciente.nombres} ${h.paciente.apellidos}` : `#${h.correlativo}`)
+}
+
+function pacienteDni(h: Historia): string {
+  return h.paciente_dni ?? h.paciente?.dni ?? '—'
+}
+
+function medicoNombre(h: Historia): string {
+  return h.medico_nombre ?? (h.medico ? `${h.medico.titulo} ${h.medico.nombre}` : '—')
+}
 
 const TABS: { value: EstadoRevision | 'todos'; label: string }[] = [
   { value: 'todos', label: 'Todos' },
@@ -31,16 +44,16 @@ export function Historias() {
   const [page, setPage] = useState(1)
   const [showCreate, setShowCreate] = useState(false)
   const [pacienteSearch, setPacienteSearch] = useState('')
+  const [submittedDni, setSubmittedDni] = useState('')
   const [newHistoria, setNewHistoria] = useState({ paciente_id: '', medico_id: '', diagnostico: '' })
   const pageSize = 20
-  const debouncedPacienteSearch = useDebounce(pacienteSearch, 300)
 
   const medicosQuery = useQuery({ queryKey: ['medicos'], queryFn: fetchMedicos })
 
   const pacientesQuery = useQuery({
-    queryKey: ['pacientes', 'historia-create', { q: debouncedPacienteSearch }],
-    queryFn: () => fetchPacientes(debouncedPacienteSearch, 1, 8),
-    enabled: showCreate,
+    queryKey: ['pacientes', 'historia-create', { dni: submittedDni }],
+    queryFn: () => fetchPacientes(submittedDni, 1, 8),
+    enabled: showCreate && submittedDni.length > 0,
   })
 
   const historiasQuery = useQuery({
@@ -116,6 +129,62 @@ export function Historias() {
     createMutation.mutate({ ...newHistoria, diagnostico })
   }
 
+  function handleBuscarPaciente() {
+    const dni = pacienteSearch.trim()
+    if (!dni) {
+      toastError('Ingresa el DNI del paciente.')
+      return
+    }
+    setNewHistoria((h) => ({ ...h, paciente_id: '' }))
+    setSubmittedDni(dni)
+  }
+
+  const [exporting, setExporting] = useState(false)
+
+  async function handleExport() {
+    setExporting(true)
+    try {
+      const filtros = {
+        q: debouncedSearch || undefined,
+        medico_id: medicoId || undefined,
+        estado_revision: tab === 'todos' ? undefined : tab,
+      }
+      const all: Historia[] = []
+      let p = 1
+      let pages = 1
+      do {
+        const res = await fetchHistorias({ ...filtros, page: p, page_size: 100 })
+        all.push(...res.data)
+        pages = res.total_pages
+        p += 1
+      } while (p <= pages)
+
+      if (all.length === 0) {
+        toastError('No hay historias para exportar con los filtros actuales.')
+        return
+      }
+
+      downloadCsv('historias-clinicas.csv', [
+        ['Paciente', 'DNI', 'Médico', 'Diagnóstico', 'Plan de trabajo', 'Objetivos', 'Estado', 'Plazo'],
+        ...all.map((h) => [
+          pacienteNombre(h),
+          pacienteDni(h),
+          medicoNombre(h),
+          h.diagnostico,
+          h.plan_trabajo_estado ? EVAL_ESTADO_LABEL[h.plan_trabajo_estado] : 'Sin datos',
+          h.objetivos_estado ? EVAL_ESTADO_LABEL[h.objetivos_estado] : 'Sin datos',
+          ESTADO_REVISION_LABEL[h.estado_revision],
+          h.plazo ? formatDate(h.plazo) : '—',
+        ]),
+      ])
+      toastSuccess(`${all.length} historias exportadas.`)
+    } catch (err) {
+      toastError(extractApiError(err).message || 'No se pudo exportar la lista.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const totalTodos = useMemo(() => {
     const c = countsQuery.data
     if (!c) return undefined
@@ -132,14 +201,25 @@ export function Historias() {
           <h1 className="font-serif text-2xl font-semibold text-text">Historias clínicas</h1>
           <p className="text-sm text-text-muted">Busca, filtra y gestiona las historias registradas.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowCreate((v) => !v)}
-          className="inline-flex min-h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover"
-        >
-          <Plus size={16} />
-          Nueva historia
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting}
+            className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 hover:bg-bg disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Download size={16} />
+            {exporting ? 'Exportando…' : 'Exportar Excel'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowCreate((v) => !v)}
+            className="inline-flex min-h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover"
+          >
+            <Plus size={16} />
+            Nueva historia
+          </button>
+        </div>
       </div>
 
       {showCreate && (
@@ -163,68 +243,87 @@ export function Historias() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <label className="flex flex-col gap-1 text-sm">
                 <span className="font-medium text-text-soft">DNI del paciente</span>
-                <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-                  <input
-                    value={pacienteSearch}
-                    onChange={(e) => {
-                      setPacienteSearch(e.target.value.replace(/\D/g, '').slice(0, 8))
-                      setNewHistoria((h) => ({ ...h, paciente_id: '' }))
-                    }}
-                    placeholder="Ej. 48054725"
-                    inputMode="numeric"
-                    className="min-h-control w-full rounded-control border border-border pl-9 pr-3 text-text"
-                    autoFocus
-                  />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                    <input
+                      value={pacienteSearch}
+                      onChange={(e) => {
+                        setPacienteSearch(e.target.value.replace(/\D/g, '').slice(0, 8))
+                        setSubmittedDni('')
+                        setNewHistoria((h) => ({ ...h, paciente_id: '' }))
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleBuscarPaciente()
+                        }
+                      }}
+                      placeholder="Ej. 48054725"
+                      inputMode="numeric"
+                      className="min-h-control w-full rounded-control border border-border pl-9 pr-3 text-text"
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleBuscarPaciente}
+                    className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg"
+                  >
+                    <Search size={16} />
+                    Buscar
+                  </button>
                 </div>
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="font-medium text-text-soft">Medico responsable</span>
                 <select
                   value={newHistoria.medico_id}
-                onChange={(e) => setNewHistoria((h) => ({ ...h, medico_id: e.target.value }))}
-                className="min-h-control rounded-control border border-border bg-white px-3 text-text"
-              >
-                <option value="">Seleccionar medico</option>
-                {medicosQuery.data?.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.titulo} {m.nombre}
-                  </option>
+                  onChange={(e) => setNewHistoria((h) => ({ ...h, medico_id: e.target.value }))}
+                  className="min-h-control rounded-control border border-border bg-white px-3 text-text"
+                >
+                  <option value="">Seleccionar medico</option>
+                  {medicosQuery.data?.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.titulo} {m.nombre}
+                    </option>
                   ))}
                 </select>
               </label>
             </div>
 
-            <div className="mt-4 rounded-card border border-border">
-              <div className="border-b border-[#EEF2F1] px-4 py-3 text-sm font-medium text-text-soft">Resultados</div>
-              <div className="max-h-56 overflow-y-auto">
-                {pacientesQuery.isLoading ? (
-                  <div className="p-4 text-sm text-text-muted">Buscando...</div>
-                ) : !pacientesQuery.data || pacientesQuery.data.data.length === 0 ? (
-                  <div className="p-4 text-sm text-text-muted">Ingresa un DNI para encontrar al paciente.</div>
-                ) : (
-                  pacientesQuery.data.data.map((p) => {
-                    const selected = newHistoria.paciente_id === p.id
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setNewHistoria((h) => ({ ...h, paciente_id: p.id }))}
-                        className={`flex w-full items-center justify-between gap-3 border-b border-[#EEF2F1] px-4 py-3 text-left text-sm last:border-0 ${
-                          selected ? 'bg-primary-soft text-primary' : 'hover:bg-bg'
-                        }`}
-                      >
-                        <span>
-                          <span className="font-medium">{p.apellidos}, {p.nombres}</span>
-                          <span className="ml-2 text-text-muted">{p.dni}</span>
-                        </span>
-                        {selected && <span className="text-xs font-medium">Seleccionado</span>}
-                      </button>
-                    )
-                  })
-                )}
+            {submittedDni && (
+              <div className="mt-4 rounded-card border border-border">
+                <div className="border-b border-[#EEF2F1] px-4 py-3 text-sm font-medium text-text-soft">Resultados</div>
+                <div className="max-h-56 overflow-y-auto">
+                  {pacientesQuery.isLoading ? (
+                    <div className="p-4 text-sm text-text-muted">Buscando...</div>
+                  ) : !pacientesQuery.data || pacientesQuery.data.data.length === 0 ? (
+                    <div className="p-4 text-sm text-text-muted">No se encontraron pacientes con ese DNI.</div>
+                  ) : (
+                    pacientesQuery.data.data.map((p) => {
+                      const selected = newHistoria.paciente_id === p.id
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setNewHistoria((h) => ({ ...h, paciente_id: p.id }))}
+                          className={`flex w-full items-center justify-between gap-3 border-b border-[#EEF2F1] px-4 py-3 text-left text-sm last:border-0 ${
+                            selected ? 'bg-primary-soft text-primary' : 'hover:bg-bg'
+                          }`}
+                        >
+                          <span>
+                            <span className="font-medium">{p.apellidos}, {p.nombres}</span>
+                            <span className="ml-2 text-text-muted">{p.dni}</span>
+                          </span>
+                          {selected && <span className="text-xs font-medium">Seleccionado</span>}
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <label className="mt-4 flex flex-col gap-1 text-sm">
               <span className="font-medium text-text-soft">Diagnostico inicial</span>
@@ -321,60 +420,58 @@ export function Historias() {
 
       <div className="overflow-hidden rounded-card border border-border bg-surface">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
+          <table className="w-full min-w-[820px] text-sm">
             <thead>
               <tr className="bg-[#F7FAF9] text-left text-xs uppercase tracking-wide text-text-muted">
-                <th className="px-4 py-3 font-medium">Paciente</th>
-                <th className="px-4 py-3 font-medium">Médico</th>
-                <th className="px-4 py-3 font-medium">Plan de trabajo</th>
-                <th className="px-4 py-3 font-medium">Objetivos</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Plazo</th>
-                <th className="px-4 py-3 font-medium text-right">Acciones</th>
+                <th className="px-3 py-2 font-medium">Paciente</th>
+                <th className="px-3 py-2 font-medium">DNI</th>
+                <th className="px-3 py-2 font-medium">Médico</th>
+                <th className="px-3 py-2 font-medium">Plan de trabajo</th>
+                <th className="px-3 py-2 font-medium">Objetivos</th>
+                <th className="px-3 py-2 font-medium">Estado</th>
+                <th className="px-3 py-2 font-medium">Plazo</th>
+                <th className="px-3 py-2 font-medium text-right">Acciones</th>
               </tr>
             </thead>
             {!historiasQuery.isLoading && (
               <tbody>
                 {rows.map((h) => (
-                  <tr key={h.id} style={{ height: 56 }} className="border-b border-[#EEF2F1] last:border-0 hover:bg-bg/50">
-                    <td className="px-4 py-2">
+                  <tr key={h.id} className="border-b border-[#EEF2F1] last:border-0 hover:bg-bg/50">
+                    <td className="px-3 py-1.5">
                       <Link to={`/historias/${h.id}`} className="font-medium text-text hover:text-primary">
-                        {h.paciente ? `${h.paciente.nombres} ${h.paciente.apellidos}` : `#${h.correlativo}`}
+                        {pacienteNombre(h)}
                       </Link>
-                      <p className="text-xs text-text-muted">{h.diagnostico}</p>
+                      <p className="truncate text-xs text-text-muted">{h.diagnostico}</p>
                     </td>
-                    <td className="px-4 py-2 text-text-soft">
-                      {h.medico ? `${h.medico.titulo} ${h.medico.nombre}` : '—'}
-                    </td>
-                    <td className="px-4 py-2">
+                    <td className="px-3 py-1.5 text-text-soft">{pacienteDni(h)}</td>
+                    <td className="px-3 py-1.5 text-text-soft">{medicoNombre(h)}</td>
+                    <td className="px-3 py-1.5">
                       <EvalBadge value={h.plan_trabajo_estado} />
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-3 py-1.5">
                       <EvalBadge value={h.objetivos_estado} />
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-3 py-1.5">
                       <EstadoRevisionBadge value={h.estado_revision} />
                     </td>
-                    <td className="px-4 py-2 text-text-soft">{formatDate(h.plazo)}</td>
-                    <td className="px-4 py-2">
+                    <td className="px-3 py-1.5 text-text-soft">{formatDate(h.plazo)}</td>
+                    <td className="px-3 py-1.5">
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => navigate(`/historias/${h.id}`)}
                           aria-label="Ver historia"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-primary-soft hover:text-primary"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-primary-soft hover:text-primary"
                         >
-                          <Eye size={16} />
+                          <Eye size={15} />
                         </button>
                         <button
                           type="button"
-                          onClick={() =>
-                            handleArchive(h.id, h.paciente ? `${h.paciente.nombres} ${h.paciente.apellidos}` : `#${h.correlativo}`)
-                          }
+                          onClick={() => handleArchive(h.id, pacienteNombre(h))}
                           aria-label="Archivar historia"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-danger-soft-bg hover:text-danger-soft-fg"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-danger-soft-bg hover:text-danger-soft-fg"
                         >
-                          <Archive size={16} />
+                          <Archive size={15} />
                         </button>
                       </div>
                     </td>
@@ -383,7 +480,7 @@ export function Historias() {
               </tbody>
             )}
           </table>
-          {historiasQuery.isLoading && <TableSkeleton rows={8} cols={7} />}
+          {historiasQuery.isLoading && <TableSkeleton rows={8} cols={8} />}
         </div>
 
         {!historiasQuery.isLoading && rows.length === 0 && (
@@ -394,7 +491,7 @@ export function Historias() {
         )}
 
         {!historiasQuery.isLoading && rows.length > 0 && (
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} total={historiasQuery.data?.total} />
         )}
       </div>
     </div>

@@ -51,6 +51,16 @@ export interface Medico {
   created_at: string
 }
 
+export interface Usuario {
+  id: string
+  email: string
+  nombre: string
+  rol: Rol
+  activo: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Intervencion {
   id: string
   historia_id: string
@@ -58,6 +68,23 @@ export interface Intervencion {
   detalle: string
   responsable_id?: string | null
   updated_at: string
+}
+
+export interface Atencion {
+  id: string
+  historia_id: string
+  disciplina: Disciplina
+  fecha: string
+  motivo: string
+  detalle: string
+  plan_trabajo_estado?: EvalEstado | null
+  objetivos_estado?: EvalEstado | null
+  necesidades?: string | null
+  objetivos_propuestos?: string | null
+  plan_actual?: string | null
+  observaciones?: string | null
+  responsable_id?: string | null
+  created_at: string
 }
 
 export interface Historia {
@@ -83,6 +110,11 @@ export interface Historia {
   paciente?: Paciente
   medico?: Medico
   intervenciones?: Intervencion[]
+  atenciones?: Atencion[]
+  // Denormalizados en GET /historias (lista), para evitar N+1
+  paciente_nombre?: string | null
+  paciente_dni?: string | null
+  medico_nombre?: string | null
 }
 
 export interface Auditoria {
