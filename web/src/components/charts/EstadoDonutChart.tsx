@@ -22,15 +22,15 @@ export function EstadoDonutChart({ porEstado }: EstadoDonutChartProps) {
 
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row">
-      <div className="relative h-48 w-48 shrink-0">
+      <div className="relative h-36 w-36 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
-              innerRadius={58}
-              outerRadius={80}
+              innerRadius={42}
+              outerRadius={60}
               paddingAngle={2}
               stroke="none"
             >

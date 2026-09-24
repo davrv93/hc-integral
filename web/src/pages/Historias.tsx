@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { Archive, Download, Eye, Plus, Search, X } from 'lucide-react'
+import { Archive, Download, Eye, Plus, Search, Upload, X } from 'lucide-react'
 import { createHistoria, deleteHistoria, fetchHistorias, fetchMedicos, fetchPacientes } from '@/lib/endpoints'
 import type { EstadoRevision, Historia } from '@/lib/types'
 import { ESTADO_REVISION_LABEL, ESTADO_REVISION_ORDER, EVAL_ESTADO_LABEL, formatDate } from '@/lib/labels'
@@ -10,9 +10,10 @@ import { TableSkeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Pagination } from '@/components/ui/Pagination'
 import { useDebounce } from '@/hooks/useDebounce'
-import { confirmArchivar, toastError, toastSuccess } from '@/lib/alerts'
+import { confirmArchivar, confirmArchivarMultiples, toastError, toastSuccess } from '@/lib/alerts'
 import { extractApiError } from '@/lib/api'
 import { downloadCsv } from '@/lib/csv'
+import { ImportarAtencionesModal } from '@/components/historia/ImportarAtencionesModal'
 
 function pacienteNombre(h: Historia): string {
   return h.paciente_nombre ?? (h.paciente ? `${h.paciente.nombres} ${h.paciente.apellidos}` : `#${h.correlativo}`)
@@ -46,6 +47,8 @@ export function Historias() {
   const [pacienteSearch, setPacienteSearch] = useState('')
   const [submittedDni, setSubmittedDni] = useState('')
   const [newHistoria, setNewHistoria] = useState({ paciente_id: '', medico_id: '', diagnostico: '' })
+  const [showImport, setShowImport] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const pageSize = 20
 
   const medicosQuery = useQuery({ queryKey: ['medicos'], queryFn: fetchMedicos })
@@ -103,6 +106,18 @@ export function Historias() {
     },
   })
 
+  const archiveManyMutation = useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map((id) => deleteHistoria(id))),
+    onSuccess: (_r, ids) => {
+      toastSuccess(ids.length === 1 ? 'Historia archivada correctamente.' : `${ids.length} historias archivadas.`)
+      setSelected(new Set())
+      void queryClient.invalidateQueries({ queryKey: ['historias'] })
+    },
+    onError: (err) => {
+      toastError(extractApiError(err).message || 'No se pudieron archivar algunas historias.')
+    },
+  })
+
   const createMutation = useMutation({
     mutationFn: createHistoria,
     onSuccess: (historia) => {
@@ -118,6 +133,22 @@ export function Historias() {
   async function handleArchive(id: string, label: string) {
     const confirmed = await confirmArchivar(label)
     if (confirmed) archiveMutation.mutate(id)
+  }
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function handleArchiveSelected() {
+    const ids = Array.from(selected)
+    if (ids.length === 0) return
+    const confirmed = await confirmArchivarMultiples(ids.length)
+    if (confirmed) archiveManyMutation.mutate(ids)
   }
 
   function handleCreate() {
@@ -204,6 +235,14 @@ export function Historias() {
         <div className="flex gap-2">
           <button
             type="button"
+            onClick={() => setShowImport(true)}
+            className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 hover:bg-bg"
+          >
+            <Upload size={16} />
+            Importar atenciones
+          </button>
+          <button
+            type="button"
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 hover:bg-bg disabled:cursor-not-allowed disabled:opacity-60"
@@ -221,6 +260,8 @@ export function Historias() {
           </button>
         </div>
       </div>
+
+      {showImport && <ImportarAtencionesModal onClose={() => setShowImport(false)} />}
 
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 px-4 py-8">
@@ -419,10 +460,52 @@ export function Historias() {
       </div>
 
       <div className="overflow-hidden rounded-card border border-border bg-surface">
+        {selected.size > 0 && (
+          <div className="flex items-center justify-between gap-2 border-b border-[#EEF2F1] bg-primary-soft px-4 py-2">
+            <span className="text-sm font-medium text-primary">
+              {selected.size} historia{selected.size === 1 ? '' : 's'} seleccionada{selected.size === 1 ? '' : 's'}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelected(new Set())}
+                className="text-sm font-medium text-text-soft hover:text-text"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleArchiveSelected}
+                disabled={archiveManyMutation.isPending}
+                className="inline-flex h-8 items-center gap-1.5 rounded-control bg-danger px-3 text-xs font-medium text-white transition-colors hover:bg-[#8f2f22] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Archive size={14} />
+                Archivar seleccionadas
+              </button>
+            </div>
+          </div>
+        )}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-sm">
+          <table className="w-full min-w-[860px] text-sm">
             <thead>
               <tr className="bg-[#F7FAF9] text-left text-xs uppercase tracking-wide text-text-muted">
+                <th className="w-10 px-3 py-2">
+                  {rows.length > 0 && (
+                    <input
+                      type="checkbox"
+                      aria-label="Seleccionar todas en esta página"
+                      checked={rows.every((h) => selected.has(h.id))}
+                      onChange={(e) =>
+                        setSelected((prev) => {
+                          const next = new Set(prev)
+                          rows.forEach((h) => (e.target.checked ? next.add(h.id) : next.delete(h.id)))
+                          return next
+                        })
+                      }
+                      className="h-4 w-4 rounded border-border accent-primary"
+                    />
+                  )}
+                </th>
                 <th className="px-3 py-2 font-medium">Paciente</th>
                 <th className="px-3 py-2 font-medium">DNI</th>
                 <th className="px-3 py-2 font-medium">Médico</th>
@@ -437,6 +520,15 @@ export function Historias() {
               <tbody>
                 {rows.map((h) => (
                   <tr key={h.id} className="border-b border-[#EEF2F1] last:border-0 hover:bg-bg/50">
+                    <td className="px-3 py-1.5">
+                      <input
+                        type="checkbox"
+                        aria-label={`Seleccionar historia de ${pacienteNombre(h)}`}
+                        checked={selected.has(h.id)}
+                        onChange={() => toggleSelected(h.id)}
+                        className="h-4 w-4 rounded border-border accent-primary"
+                      />
+                    </td>
                     <td className="px-3 py-1.5">
                       <Link to={`/historias/${h.id}`} className="font-medium text-text hover:text-primary">
                         {pacienteNombre(h)}
@@ -480,7 +572,7 @@ export function Historias() {
               </tbody>
             )}
           </table>
-          {historiasQuery.isLoading && <TableSkeleton rows={8} cols={8} />}
+          {historiasQuery.isLoading && <TableSkeleton rows={8} cols={9} />}
         </div>
 
         {!historiasQuery.isLoading && rows.length === 0 && (

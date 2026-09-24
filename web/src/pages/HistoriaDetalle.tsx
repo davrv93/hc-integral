@@ -8,6 +8,7 @@ import { fetchHistoria, patchHistoria } from '@/lib/endpoints'
 import type { Historia } from '@/lib/types'
 import { historiaFormSchema, type HistoriaFormValues } from '@/lib/schemas'
 import { extractApiError } from '@/lib/api'
+import { formatDate } from '@/lib/labels'
 import { toastError, toastSuccess } from '@/lib/alerts'
 import { Tabs } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
@@ -17,9 +18,9 @@ import { IdentificacionTab } from '@/components/historia/IdentificacionTab'
 import { EvaluacionTab } from '@/components/historia/EvaluacionTab'
 import { PropuestaTab } from '@/components/historia/PropuestaTab'
 import { SeguimientoTab } from '@/components/historia/SeguimientoTab'
-import { HistorialTab } from '@/components/historia/HistorialTab'
 import { EvolucionTab } from '@/components/historia/EvolucionTab'
 import { AtencionesTab } from '@/components/historia/AtencionesTab'
+import { HistoriaTimeline } from '@/components/historia/HistoriaTimeline'
 
 const TABS = [
   { value: 'identificacion', label: 'Identificación' },
@@ -28,7 +29,6 @@ const TABS = [
   { value: 'propuesta', label: 'Propuesta interdisciplinaria' },
   { value: 'seguimiento', label: 'Seguimiento' },
   { value: 'evolucion', label: 'Evolución' },
-  { value: 'historial', label: 'Historial' },
 ]
 
 function toFormValues(historia: Historia): HistoriaFormValues {
@@ -134,32 +134,51 @@ export function HistoriaDetalle() {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col gap-6 pb-24">
-        <div className="flex flex-col gap-3">
-          <Link to="/historias" className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-primary">
-            <ArrowLeft size={14} />
-            Historias clínicas
-          </Link>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="font-serif text-2xl font-semibold text-text">{pacienteNombre}</h1>
-              <p className="text-sm text-text-muted">{historia.diagnostico}</p>
+      <form onSubmit={methods.handleSubmit(onSubmit)} className="hc-particles -m-3 rounded-card p-3">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="flex min-w-0 flex-col gap-4 pb-24">
+            <div className="hc-panel flex flex-col gap-3 rounded-card border border-border bg-surface/95 p-4 shadow-sm">
+              <Link to="/historias" className="inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-primary">
+                <ArrowLeft size={14} />
+                Historias clínicas
+              </Link>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h1 className="font-serif text-xl font-semibold text-text">{pacienteNombre}</h1>
+                  <p className="text-sm text-text-muted">{historia.diagnostico}</p>
+                </div>
+                <EstadoRevisionBadge value={historia.estado_revision} />
+              </div>
+              <div className="grid grid-cols-1 gap-2 rounded-control border border-[#EEF2F1] bg-bg/70 px-3 py-2 text-sm sm:grid-cols-3">
+                <div>
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted">Correlativo</span>
+                  <p className="font-medium text-text">#{historia.correlativo}</p>
+                </div>
+                <div>
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted">Creada</span>
+                  <p className="font-medium text-text">{formatDate(historia.created_at)}</p>
+                </div>
+                <div>
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted">Ultima actualizacion</span>
+                  <p className="font-medium text-text">{formatDate(historia.updated_at)}</p>
+                </div>
+              </div>
             </div>
-            <EstadoRevisionBadge value={historia.estado_revision} />
-          </div>
-        </div>
 
-        <div className="rounded-card border border-border bg-surface">
-          <Tabs tabs={TABS} value={tab} onChange={setTab} />
-          <div className="p-6">
-            {tab === 'identificacion' && <IdentificacionTab historia={historia} />}
-            {tab === 'atenciones' && <AtencionesTab historiaId={historiaId} />}
-            {tab === 'evaluacion' && <EvaluacionTab />}
-            {tab === 'propuesta' && <PropuestaTab historiaId={historiaId} />}
-            {tab === 'seguimiento' && <SeguimientoTab />}
-            {tab === 'evolucion' && <EvolucionTab historiaId={historiaId} />}
-            {tab === 'historial' && <HistorialTab historiaId={historiaId} />}
+            <div className="hc-panel rounded-card border border-border bg-surface/95 shadow-sm">
+              <Tabs tabs={TABS} value={tab} onChange={setTab} />
+              <div className="p-4">
+                {tab === 'identificacion' && <IdentificacionTab historia={historia} />}
+                {tab === 'atenciones' && <AtencionesTab historiaId={historiaId} />}
+                {tab === 'evaluacion' && <EvaluacionTab />}
+                {tab === 'propuesta' && <PropuestaTab historiaId={historiaId} />}
+                {tab === 'seguimiento' && <SeguimientoTab />}
+                {tab === 'evolucion' && <EvolucionTab historiaId={historiaId} />}
+              </div>
+            </div>
           </div>
+
+          <HistoriaTimeline historia={historia} />
         </div>
 
         <div className="fixed bottom-0 left-[240px] right-0 border-t border-border bg-surface/95 px-7 py-4 backdrop-blur-sm">

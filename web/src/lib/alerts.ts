@@ -26,6 +26,36 @@ export async function confirmArchivar(nombre: string): Promise<boolean> {
   return result.isConfirmed
 }
 
+export async function confirmArchivarMultiples(n: number): Promise<boolean> {
+  const result = await baseSwal.fire({
+    icon: 'warning',
+    iconColor: '#C27A1A',
+    title: 'Archivar historias clínicas',
+    html: `¿Deseas archivar <strong>${n}</strong> historia${n === 1 ? '' : 's'} seleccionada${n === 1 ? '' : 's'}?<br/><span style="color:#5A6B6F;font-size:0.875rem">No se borran de forma definitiva, se pueden restaurar desde Auditoría.</span>`,
+    showCancelButton: true,
+    confirmButtonText: 'Sí, archivar',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true,
+    focusCancel: true,
+  })
+  return result.isConfirmed
+}
+
+export async function confirmEliminarAtenciones(n: number): Promise<boolean> {
+  const result = await baseSwal.fire({
+    icon: 'warning',
+    iconColor: '#9E3322',
+    title: 'Eliminar atenciones',
+    html: `¿Deseas eliminar <strong>${n}</strong> atencion${n === 1 ? '' : 'es'} seleccionada${n === 1 ? '' : 's'}?<br/><span style="color:#5A6B6F;font-size:0.875rem">Esta acción no se puede deshacer.</span>`,
+    showCancelButton: true,
+    confirmButtonText: n === 1 ? 'Sí, eliminar' : 'Sí, eliminar todas',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true,
+    focusCancel: true,
+  })
+  return result.isConfirmed
+}
+
 const toastMixin = Swal.mixin({
   toast: true,
   position: 'bottom-end',

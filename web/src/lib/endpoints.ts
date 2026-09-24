@@ -92,6 +92,13 @@ export async function fetchAuditoria(historiaId: string): Promise<Auditoria[]> {
   return Array.isArray(res.data) ? res.data : res.data.data
 }
 
+export async function fetchAuditoriaReciente(limit = 12): Promise<Auditoria[]> {
+  const res = await api.get<Auditoria[] | { data: Auditoria[] }>('/api/v1/auditoria/reciente', {
+    params: { limit },
+  })
+  return Array.isArray(res.data) ? res.data : res.data.data
+}
+
 export type CreateAtencionInput = Pick<Atencion, 'disciplina' | 'motivo' | 'detalle'> &
   Partial<
     Pick<
@@ -112,6 +119,24 @@ export async function fetchAtenciones(historiaId: string): Promise<Atencion[]> {
 
 export async function createAtencion(historiaId: string, input: CreateAtencionInput): Promise<Atencion> {
   const res = await api.post<Atencion>(`/api/v1/historias/${historiaId}/atenciones`, input)
+  return res.data
+}
+
+export async function deleteAtencion(historiaId: string, atencionId: string): Promise<void> {
+  await api.delete(`/api/v1/historias/${historiaId}/atenciones/${atencionId}`)
+}
+
+export type ImportAtencionRow = { dni: string; disciplina: string; motivo: string; detalle: string } & Partial<
+  Record<'plan_trabajo_estado' | 'objetivos_estado' | 'necesidades' | 'objetivos_propuestos' | 'plan_actual' | 'observaciones', string>
+>
+
+export interface ImportAtencionesResult {
+  imported: number
+  errors: { row: number; message: string }[]
+}
+
+export async function importAtenciones(rows: ImportAtencionRow[]): Promise<ImportAtencionesResult> {
+  const res = await api.post<ImportAtencionesResult>('/api/v1/atenciones/import', { rows })
   return res.data
 }
 
