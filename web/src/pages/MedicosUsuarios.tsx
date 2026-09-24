@@ -22,26 +22,47 @@ export function MedicosUsuarios() {
         ) : !medicosQuery.data || medicosQuery.data.length === 0 ? (
           <EmptyState icon={Stethoscope} title="Sin médicos registrados" />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[#F7FAF9] text-left text-xs uppercase tracking-wide text-text-muted">
-                <th className="px-4 py-3 font-medium">Nombre</th>
-                <th className="px-4 py-3 font-medium">Especialidad</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="divide-y divide-[#EEF2F1] xl:hidden">
               {medicosQuery.data.map((m) => (
-                <tr key={m.id} style={{ height: 56 }} className="border-b border-[#EEF2F1] last:border-0">
-                  <td className="px-4 py-2 font-medium text-text">
-                    {m.titulo} {m.nombre}
-                  </td>
-                  <td className="px-4 py-2 text-text-soft">{m.especialidad ?? '—'}</td>
-                  <td className="px-4 py-2 text-text-soft">{m.activo ? 'Activo' : 'Inactivo'}</td>
-                </tr>
+                <article key={m.id} className="p-4">
+                  <h2 className="font-medium text-text">{m.titulo} {m.nombre}</h2>
+                  <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <dt className="text-xs text-text-muted">Especialidad</dt>
+                      <dd className="mt-1 text-text-soft">{m.especialidad ?? '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-text-muted">Estado</dt>
+                      <dd className="mt-1 text-text-soft">{m.activo ? 'Activo' : 'Inactivo'}</dd>
+                    </div>
+                  </dl>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+            <div className="hidden overflow-x-auto xl:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#F7FAF9] text-left text-xs uppercase tracking-wide text-text-muted">
+                    <th className="px-4 py-3 font-medium">Nombre</th>
+                    <th className="px-4 py-3 font-medium">Especialidad</th>
+                    <th className="px-4 py-3 font-medium">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medicosQuery.data.map((m) => (
+                    <tr key={m.id} style={{ height: 56 }} className="border-b border-[#EEF2F1] last:border-0">
+                      <td className="px-4 py-2 font-medium text-text">
+                        {m.titulo} {m.nombre}
+                      </td>
+                      <td className="px-4 py-2 text-text-soft">{m.especialidad ?? '—'}</td>
+                      <td className="px-4 py-2 text-text-soft">{m.activo ? 'Activo' : 'Inactivo'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

@@ -22,6 +22,25 @@
 }
 
 @layer utilities {
+  .hc-panel {
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .hc-panel:hover {
+    box-shadow: 0 10px 24px rgba(15, 40, 38, 0.08);
+  }
+
+  .hc-particles {
+    background-image:
+      radial-gradient(circle at 12px 12px, rgba(14, 110, 102, 0.08) 1px, transparent 1.5px),
+      radial-gradient(circle at 38px 30px, rgba(62, 111, 194, 0.06) 1px, transparent 1.5px);
+    background-size: 52px 52px;
+  }
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
     height: 8px;

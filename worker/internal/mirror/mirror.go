@@ -35,7 +35,7 @@ type column struct {
 }
 
 // schema mirrors the columns of pacientes, medicos, historias and
-// intervenciones as defined in migrations/0001_init.sql, minus foreign key
+// intervenciones/atenciones as defined in migrations, minus foreign key
 // constraints (this is a simplified read mirror, not a transactional store).
 var schema = map[string][]column{
 	"pacientes": {
@@ -86,11 +86,27 @@ var schema = map[string][]column{
 		{"responsable_id", kindText},
 		{"updated_at", kindText},
 	},
+	"atenciones": {
+		{"id", kindText},
+		{"historia_id", kindText},
+		{"disciplina", kindText},
+		{"fecha", kindText},
+		{"motivo", kindText},
+		{"detalle", kindText},
+		{"plan_trabajo_estado", kindText},
+		{"objetivos_estado", kindText},
+		{"necesidades", kindText},
+		{"objetivos_propuestos", kindText},
+		{"plan_actual", kindText},
+		{"observaciones", kindText},
+		{"responsable_id", kindText},
+		{"created_at", kindText},
+	},
 }
 
 // tableOrder fixes the creation order (not semantically important since we
 // don't declare foreign keys, but keeps the schema deterministic/readable).
-var tableOrder = []string{"pacientes", "medicos", "historias", "intervenciones"}
+var tableOrder = []string{"pacientes", "medicos", "historias", "intervenciones", "atenciones"}
 
 // Open creates (if needed) the parent directory of path, opens the SQLite
 // mirror database, applies the mirror schema (idempotent, CREATE TABLE IF

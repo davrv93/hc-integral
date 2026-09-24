@@ -80,17 +80,17 @@ export function ImportarAtencionesModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 px-4 py-8">
-      <div className="max-h-[calc(100vh-64px)] w-full max-w-2xl overflow-y-auto rounded-card border border-border bg-surface p-5 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 sm:items-center sm:p-6">
+      <div role="dialog" aria-modal="true" aria-labelledby="import-atenciones-title" className="max-h-[calc(100dvh-1rem)] w-full max-w-2xl overflow-y-auto rounded-t-card border border-border bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl sm:max-h-[calc(100vh-3rem)] sm:rounded-card sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h2 className="font-serif text-xl font-semibold text-text">Importar atenciones</h2>
+            <h2 id="import-atenciones-title" className="font-serif text-xl font-semibold text-text">Importar atenciones</h2>
             <p className="text-sm text-text-muted">Sube un CSV (exportado de Excel) para registrar atenciones en lote.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:bg-bg hover:text-text"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:bg-bg hover:text-text"
             aria-label="Cerrar"
           >
             <X size={18} />
@@ -98,7 +98,7 @@ export function ImportarAtencionesModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <input
               ref={fileInputRef}
               type="file"
@@ -120,7 +120,7 @@ export function ImportarAtencionesModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={handleDescargarPlantilla}
-              className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-3 text-sm font-medium text-text-soft transition-colors hover:bg-bg"
+              className="inline-flex min-h-control w-full items-center justify-center gap-2 rounded-control border border-border bg-white px-3 text-sm font-medium text-text-soft transition-colors hover:bg-bg sm:w-auto"
             >
               <FileUp size={16} />
               Plantilla
@@ -181,11 +181,11 @@ export function ImportarAtencionesModal({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-control items-center justify-center rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg"
+            className="inline-flex min-h-control w-full items-center justify-center rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg sm:w-auto"
           >
             Cerrar
           </button>
@@ -194,6 +194,7 @@ export function ImportarAtencionesModal({ onClose }: { onClose: () => void }) {
             onClick={() => importMutation.mutate()}
             loading={importMutation.isPending}
             disabled={!built || built.rows.length === 0}
+            className="w-full sm:w-auto"
           >
             <Upload size={16} />
             Importar {built && built.rows.length > 0 ? `(${built.rows.length})` : ''}

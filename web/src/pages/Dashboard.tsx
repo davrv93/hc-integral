@@ -132,35 +132,58 @@ export function Dashboard() {
           ) : plazosProximos.length === 0 ? (
             <EmptyState title="Sin plazos próximos" description="No hay historias con plazo en los próximos 7 días." />
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[#EEF2F1] text-left text-xs uppercase tracking-wide text-text-muted">
-                  <th className="py-2 font-medium">Historia</th>
-                  <th className="py-2 font-medium">Plazo</th>
-                  <th className="py-2 font-medium">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <div className="divide-y divide-[#EEF2F1] lg:hidden">
                 {plazosProximos.slice(0, 8).map(({ historia, dias }) => (
-                  <tr key={historia.id} className="border-b border-[#EEF2F1] last:border-0">
-                    <td className="py-1.5">
-                      <Link to={`/historias/${historia.id}`} className="font-medium text-primary hover:underline">
-                        #{historia.correlativo} · {historia.diagnostico}
+                  <article key={historia.id} className="py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <Link to={`/historias/${historia.id}`} className="min-w-0 font-medium text-primary hover:underline">
+                        <span className="block">#{historia.correlativo}</span>
+                        <span className="mt-0.5 block break-words text-sm font-normal text-text">{historia.diagnostico}</span>
                       </Link>
-                    </td>
-                    <td className="py-1.5 text-text-soft">
+                      <EstadoRevisionBadge value={historia.estado_revision} />
+                    </div>
+                    <p className="mt-2 text-sm text-text-soft">
                       {formatDate(historia.plazo)}{' '}
-                      <span className={dias < 0 ? 'text-danger' : 'text-text-muted'}>
+                      <span className={dias < 0 ? 'font-medium text-danger' : 'text-text-muted'}>
                         ({dias < 0 ? `${Math.abs(dias)}d vencido` : dias === 0 ? 'hoy' : `${dias}d`})
                       </span>
-                    </td>
-                    <td className="py-1.5">
-                      <EstadoRevisionBadge value={historia.estado_revision} />
-                    </td>
-                  </tr>
+                    </p>
+                  </article>
                 ))}
-              </tbody>
-            </table>
+              </div>
+              <div className="hidden overflow-x-auto lg:block">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#EEF2F1] text-left text-xs uppercase tracking-wide text-text-muted">
+                      <th className="py-2 font-medium">Historia</th>
+                      <th className="py-2 font-medium">Plazo</th>
+                      <th className="py-2 font-medium">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plazosProximos.slice(0, 8).map(({ historia, dias }) => (
+                      <tr key={historia.id} className="border-b border-[#EEF2F1] last:border-0">
+                        <td className="py-1.5">
+                          <Link to={`/historias/${historia.id}`} className="font-medium text-primary hover:underline">
+                            #{historia.correlativo} · {historia.diagnostico}
+                          </Link>
+                        </td>
+                        <td className="py-1.5 text-text-soft">
+                          {formatDate(historia.plazo)}{' '}
+                          <span className={dias < 0 ? 'text-danger' : 'text-text-muted'}>
+                            ({dias < 0 ? `${Math.abs(dias)}d vencido` : dias === 0 ? 'hoy' : `${dias}d`})
+                          </span>
+                        </td>
+                        <td className="py-1.5">
+                          <EstadoRevisionBadge value={historia.estado_revision} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 

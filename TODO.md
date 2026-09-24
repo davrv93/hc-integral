@@ -8,6 +8,8 @@ comentario de estado; se actualiza según el reporte de cada servicio.
 
 - [x] Esquema PostgreSQL (`migrations/0001_init.sql`): usuarios, médicos,
       pacientes, historias, intervenciones, auditoría, outbox, OAuth.
+- [x] Esquema de atenciones por historia (`migrations/0002_atenciones.sql`):
+      registra fecha, disciplina, motivo, detalle y aspectos de evolución.
 - [x] Contrato de servicios (`docs/CONTRACT.md`) y sistema visual
       (`docs/design-system.md`).
 - [x] `docker-compose.yml` (Postgres) y `.env.example`.
@@ -38,7 +40,8 @@ cuenta.
 
 - [x] Middleware JWT (valida contra JWKS del auth-service, refresco cada 10 min)
 - [x] CRUD pacientes / médicos (DNI validado, 409 en duplicado)
-- [x] CRUD historias + intervenciones por disciplina (PUT upsert)
+- [x] CRUD historias + intervenciones por disciplina (PUT upsert) y registro
+      histórico de atenciones por historia.
 - [x] Auditoría real en cada escritura (antes/después, usuario, IP)
 - [x] `GET /api/v1/reportes/resumen` (todos los agregados, verificados con datos reales)
 - [x] Paginación y filtros (`q`, médico, plan, objetivos, estado)
@@ -73,9 +76,9 @@ Simplificaciones documentadas en `worker/README.md`: entrega at-least-once
 - [x] Historias: creación con modal de búsqueda de paciente por DNI,
       selección de médico y diagnóstico; búsqueda debounced, filtros,
       paginación server-side, archivar con SweetAlert2 + toast
-- [x] Detalle de HC: 5 pestañas, react-hook-form + zod, guarda solo campos
-      modificados como atención, historial de auditoría real y gráfico de
-      evolución por snapshots de auditoría
+- [x] Detalle de HC: pestañas de identificación, atenciones, evaluación,
+      propuesta, seguimiento, evolución e historial. Las atenciones son
+      registros propios y alimentan el gráfico de evolución.
 - [x] Reportes: LineChart, barras por disciplina, tabla por médico
 - [x] `npm run build` (tsc + vite), `npm run lint`, `npm run dev` — todo limpio
 

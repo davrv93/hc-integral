@@ -4,6 +4,7 @@ interface Option<T extends string> {
 }
 
 interface SegmentedControlProps<T extends string> {
+  label: string
   options: Option<T>[]
   value: T | null | undefined
   onChange: (value: T) => void
@@ -11,13 +12,14 @@ interface SegmentedControlProps<T extends string> {
 }
 
 export function SegmentedControl<T extends string>({
+  label,
   options,
   value,
   onChange,
   disabled,
 }: SegmentedControlProps<T>) {
   return (
-    <div className="inline-flex rounded-control border border-border bg-white p-1" role="radiogroup">
+    <div aria-label={label} className="grid w-full grid-cols-3 rounded-control border border-border bg-white p-1 sm:inline-flex sm:w-auto sm:grid-cols-none" role="radiogroup">
       {options.map((opt) => {
         const active = opt.value === value
         return (
@@ -28,7 +30,7 @@ export function SegmentedControl<T extends string>({
             aria-checked={active}
             disabled={disabled}
             onClick={() => onChange(opt.value)}
-            className={`min-h-[36px] rounded-[8px] px-4 text-sm font-medium transition-colors duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`min-h-control w-full min-w-0 rounded-[8px] px-1 text-xs font-medium leading-tight transition-colors duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto sm:px-4 sm:text-sm ${
               active ? 'bg-primary text-white' : 'text-text-soft hover:bg-bg'
             }`}
           >

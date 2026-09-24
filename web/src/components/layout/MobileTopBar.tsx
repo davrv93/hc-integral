@@ -22,7 +22,7 @@ export function MobileTopBar() {
         type="button"
         onClick={handleLogout}
         aria-label="Cerrar sesión"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-danger-soft-bg hover:text-danger-soft-fg"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-danger-soft-bg hover:text-danger-soft-fg"
       >
         <LogOut size={17} />
       </button>

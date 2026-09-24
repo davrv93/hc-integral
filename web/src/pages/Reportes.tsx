@@ -175,45 +175,51 @@ export function Reportes() {
           <h1 className="font-serif text-2xl font-semibold text-text">Reportes</h1>
           <p className="text-sm text-text-muted">Indicadores agregados de historias clínicas.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={exportCsv}>
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+          <Button variant="secondary" onClick={exportCsv} className="w-full sm:w-auto">
             <FileSpreadsheet size={16} />
             Excel
           </Button>
-          <Button variant="secondary" onClick={exportPdf}>
+          <Button variant="secondary" onClick={exportPdf} className="w-full sm:w-auto">
             <Download size={16} />
             PDF
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <select
-          value={periodo}
-          onChange={(e) => setPeriodo(e.target.value)}
-          className="min-h-control rounded-control border border-border bg-white px-3 text-sm text-text-soft"
-        >
-          {PERIODOS.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={medicoId}
-          onChange={(e) => setMedicoId(e.target.value)}
-          className="min-h-control rounded-control border border-border bg-white px-3 text-sm text-text-soft sm:w-56"
-        >
-          <option value="">Todos los médicos</option>
-          {medicosQuery.data?.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.titulo} {m.nombre}
-            </option>
-          ))}
-        </select>
+      <div className="grid grid-cols-1 gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2 lg:w-fit lg:min-w-[32rem]">
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-text-soft">Periodo</span>
+          <select
+            value={periodo}
+            onChange={(e) => setPeriodo(e.target.value)}
+            className="min-h-control w-full rounded-control border border-border bg-white px-3 text-base text-text-soft sm:text-sm"
+          >
+            {PERIODOS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-text-soft">Médico</span>
+          <select
+            value={medicoId}
+            onChange={(e) => setMedicoId(e.target.value)}
+            className="min-h-control w-full rounded-control border border-border bg-white px-3 text-base text-text-soft sm:text-sm"
+          >
+            <option value="">Todos los médicos</option>
+            {medicosQuery.data?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.titulo} {m.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
-      <div className="rounded-card border border-border bg-surface p-6">
+      <div className="rounded-card border border-border bg-surface p-4 sm:p-6">
         <h2 className="mb-4 font-serif text-lg font-semibold text-text">Historias creadas vs. completadas</h2>
         {resumenQuery.isLoading ? (
           <Skeleton className="h-64" />
@@ -223,12 +229,12 @@ export function Reportes() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div className="rounded-card border border-border bg-surface p-6">
+        <div className="rounded-card border border-border bg-surface p-4 sm:p-6">
           <h2 className="mb-4 font-serif text-lg font-semibold text-text">Intervenciones por disciplina</h2>
           {resumenQuery.isLoading ? <Skeleton className="h-40" /> : <HorizontalBarList items={intervencionesItems} />}
         </div>
 
-        <div className="rounded-card border border-border bg-surface p-6">
+        <div className="rounded-card border border-border bg-surface p-4 sm:p-6">
           <h2 className="mb-4 font-serif text-lg font-semibold text-text">Evaluación general</h2>
           {resumenQuery.isLoading ? (
             <div className="flex flex-col gap-4">
@@ -244,12 +250,46 @@ export function Reportes() {
         </div>
       </div>
 
-      <div className="rounded-card border border-border bg-surface p-6">
+      <div className="rounded-card border border-border bg-surface p-4 sm:p-6">
         <h2 className="mb-4 font-serif text-lg font-semibold text-text">Desglose por médico</h2>
         {resumenQuery.isLoading ? (
           <Skeleton className="h-48" />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="divide-y divide-[#EEF2F1] lg:hidden">
+            {resumen?.por_medico.map((m) => (
+              <article key={m.medico_id} className="py-4 first:pt-0 last:pb-0">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="font-medium text-text">{m.nombre}</h3>
+                  <span className="rounded-pill bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">{m.total} historias</span>
+                </div>
+                <div
+                  className="mt-3 flex h-2.5 w-full overflow-hidden rounded-pill bg-border/40"
+                  role="img"
+                  aria-label={`${m.en_revision} en revisión, ${m.requiere_propuesta} requieren propuesta, ${m.completo} completas`}
+                >
+                  <div className="h-full bg-[#C27A1A]" style={{ width: `${(m.en_revision / (m.total || 1)) * 100}%` }} />
+                  <div className="h-full bg-[#3E6FC2]" style={{ width: `${(m.requiere_propuesta / (m.total || 1)) * 100}%` }} />
+                  <div className="h-full bg-[#A04A9C]" style={{ width: `${(m.completo / (m.total || 1)) * 100}%` }} />
+                </div>
+                <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <dt className="text-text-muted">En revisión</dt>
+                    <dd className="mt-1 font-semibold text-text">{m.en_revision}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">Propuesta</dt>
+                    <dd className="mt-1 font-semibold text-text">{m.requiere_propuesta}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">Completo</dt>
+                    <dd className="mt-1 font-semibold text-text">{m.completo}</dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
                 <tr className="border-b border-[#EEF2F1] text-left text-xs uppercase tracking-wide text-text-muted">
@@ -287,6 +327,7 @@ export function Reportes() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>

@@ -72,7 +72,7 @@ Middleware: lee `Authorization: Bearer <jwt>`, valida firma contra JWKS (cachea,
 GET    /api/v1/health
 GET    /api/v1/medicos
 GET    /api/v1/pacientes?q=&page=&page_size=
-POST   /api/v1/pacientes                        {dni, nombres, apellidos, fecha_nac?, sexo?, telefono?}
+POST   /api/v1/pacientes                        {dni, nombres, apellidos, fecha_nac, sexo, telefono?}
 GET    /api/v1/pacientes/:id
 GET    /api/v1/pacientes/by-dni/:dni
 
@@ -85,6 +85,7 @@ DELETE /api/v1/historias/:id                    soft delete (set deleted_at), re
 PUT    /api/v1/historias/:id/intervenciones/:disciplina   {detalle}   disciplina en (medicina|psicologia|terapia_fisica|nutricion)
 
 GET    /api/v1/historias/:id/auditoria
+GET    /api/v1/auditoria/reciente?limit=12
 
 GET    /api/v1/reportes/resumen?desde=&hasta=&medico_id=
   -> {

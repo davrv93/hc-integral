@@ -17,7 +17,7 @@ export function MobileTabBar() {
           end={'end' in item ? item.end : false}
           title={item.label}
           className={({ isActive }) =>
-            `flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium leading-tight ${
+            `flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 py-1 text-[10px] font-medium leading-tight ${
               isActive ? 'text-primary' : 'text-text-muted'
             }`
           }

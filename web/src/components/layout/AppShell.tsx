@@ -5,7 +5,7 @@ import { MobileTabBar } from './MobileTabBar'
 
 export function AppShell() {
   return (
-    <div className="flex h-screen overflow-hidden bg-bg">
+    <div className="flex h-dvh min-h-[100svh] overflow-hidden bg-bg">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopBar />

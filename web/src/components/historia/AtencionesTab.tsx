@@ -175,7 +175,7 @@ export function AtencionesTab({ historiaId }: { historiaId: string }) {
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit" loading={createMutation.isPending}>
+          <Button type="submit" loading={createMutation.isPending} className="w-full sm:w-auto">
             <Plus size={16} />
             Registrar atencion
           </Button>
@@ -183,7 +183,7 @@ export function AtencionesTab({ historiaId }: { historiaId: string }) {
       </form>
 
       <div className="rounded-card border border-border bg-surface">
-        <div className="flex items-center justify-between gap-2 border-b border-[#EEF2F1] px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#EEF2F1] px-4 py-3">
           <div className="flex items-center gap-2">
             {atenciones.length > 0 && (
               <input
@@ -191,7 +191,7 @@ export function AtencionesTab({ historiaId }: { historiaId: string }) {
                 aria-label="Seleccionar todas"
                 checked={selected.size === atenciones.length}
                 onChange={(e) => setSelected(e.target.checked ? new Set(atenciones.map((a) => a.id)) : new Set())}
-                className="h-4 w-4 rounded border-border accent-primary"
+                className="h-5 w-5 rounded border-border accent-primary"
               />
             )}
             <span className="text-sm font-medium text-text-soft">
@@ -203,7 +203,7 @@ export function AtencionesTab({ historiaId }: { historiaId: string }) {
               type="button"
               onClick={handleDeleteSelected}
               disabled={deleteMutation.isPending}
-              className="inline-flex h-8 items-center gap-1.5 rounded-control px-2.5 text-xs font-medium text-danger-soft-fg transition-colors hover:bg-danger-soft-bg disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-control w-full items-center justify-center gap-1.5 rounded-control px-3 text-sm font-medium text-danger-soft-fg transition-colors hover:bg-danger-soft-bg disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               <Trash2 size={14} />
               Eliminar
@@ -223,7 +223,7 @@ export function AtencionesTab({ historiaId }: { historiaId: string }) {
                   aria-label={`Seleccionar atención de ${formatDateTime(a.fecha)}`}
                   checked={selected.has(a.id)}
                   onChange={() => toggleSelected(a.id)}
-                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-border accent-primary"
+                  className="mt-0.5 h-5 w-5 shrink-0 rounded border-border accent-primary"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">

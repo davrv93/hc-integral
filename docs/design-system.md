@@ -57,9 +57,13 @@ nunca solo color): `#0A8F80` `#3E6FC2` `#C27A1A` `#2B7FD0` `#A04A9C`.
 - Animaciones: 150-220ms ease-out, sin rebote exagerado. Nada de spinners genéricos
   largos; usar skeletons para listas/tablas mientras cargan.
 
-## Layout
+## Layout adaptable
 
-- Sidebar fijo 240px: logo + nombre, menú (Inicio, Historias clínicas, Pacientes,
-  Reportes, Médicos y usuarios), sesión OAuth abajo, tarjeta de usuario + logout.
-- Contenido: padding 28-32px, tarjetas en `surface` con borde `border` 1px.
-- Tablas: encabezado `#F7FAF9`, fila 56px, borde inferior sutil `#EEF2F1`.
+- Escritorio: sidebar fijo de 240px con navegación y sesión. Contenido centrado, ancho máximo 1200px y padding 28-32px.
+- Móvil: barra superior compacta y navegación fija inferior; reserva padding inferior para que controles y contenido no queden debajo.
+- Usa `100dvh`/áreas seguras donde haga falta. Los diálogos móviles se presentan como panel inferior con scroll interno.
+- Tarjetas `surface` con borde `border` de 1px. Reduce padding en móvil sin perder separación entre secciones.
+- Tablas solo cuando haya ancho legible. En listas de pacientes e historias, conserva paginación de servidor y muestra tarjetas en pantallas estrechas.
+- En tarjetas, prioriza identidad y estado; presenta otros campos como pares etiqueta/valor. No ocultes acciones necesarias.
+- Controles y acciones táctiles: mínimo 44px. Mantén búsqueda/filtros a ancho completo en móvil y apílalos en orden de uso.
+- Tablas: encabezado `#F7FAF9`, fila 56px, borde inferior sutil `#EEF2F1`. Limita scroll horizontal a gráficos o controles horizontales deliberados.

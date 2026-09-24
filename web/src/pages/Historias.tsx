@@ -232,11 +232,11 @@ export function Historias() {
           <h1 className="font-serif text-2xl font-semibold text-text">Historias clínicas</h1>
           <p className="text-sm text-text-muted">Busca, filtra y gestiona las historias registradas.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
           <button
             type="button"
             onClick={() => setShowImport(true)}
-            className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 hover:bg-bg"
+            className="inline-flex min-h-control w-full items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 hover:bg-bg sm:w-auto"
           >
             <Upload size={16} />
             Importar atenciones
@@ -245,7 +245,7 @@ export function Historias() {
             type="button"
             onClick={handleExport}
             disabled={exporting}
-            className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 hover:bg-bg disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-control w-full items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors duration-150 hover:bg-bg disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             <Download size={16} />
             {exporting ? 'Exportando…' : 'Exportar Excel'}
@@ -253,7 +253,7 @@ export function Historias() {
           <button
             type="button"
             onClick={() => setShowCreate((v) => !v)}
-            className="inline-flex min-h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover"
+            className="inline-flex min-h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover sm:w-auto"
           >
             <Plus size={16} />
             Nueva historia
@@ -264,17 +264,17 @@ export function Historias() {
       {showImport && <ImportarAtencionesModal onClose={() => setShowImport(false)} />}
 
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 px-4 py-8">
-          <div className="max-h-[calc(100vh-64px)] w-full max-w-4xl overflow-y-auto rounded-card border border-border bg-surface p-5 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 sm:items-center sm:p-6">
+          <div role="dialog" aria-modal="true" aria-labelledby="new-historia-title" className="max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-y-auto rounded-t-card border border-border bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl sm:max-h-[calc(100vh-3rem)] sm:rounded-card sm:p-6">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <h2 className="font-serif text-xl font-semibold text-text">Nueva historia clinica</h2>
+                <h2 id="new-historia-title" className="font-serif text-xl font-semibold text-text">Nueva historia clinica</h2>
                 <p className="text-sm text-text-muted">Busca al paciente por DNI, seleccionalo y registra el diagnostico inicial.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCreate(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:bg-bg hover:text-text"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:bg-bg hover:text-text"
                 aria-label="Cerrar"
               >
                 <X size={18} />
@@ -284,7 +284,7 @@ export function Historias() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <label className="flex flex-col gap-1 text-sm">
                 <span className="font-medium text-text-soft">DNI del paciente</span>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <div className="relative flex-1">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                     <input
@@ -302,14 +302,14 @@ export function Historias() {
                       }}
                       placeholder="Ej. 48054725"
                       inputMode="numeric"
-                      className="min-h-control w-full rounded-control border border-border pl-9 pr-3 text-text"
+                    className="min-h-control w-full rounded-control border border-border pl-9 pr-3 text-text"
                       autoFocus
                     />
                   </div>
                   <button
                     type="button"
                     onClick={handleBuscarPaciente}
-                    className="inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg"
+                    className="inline-flex min-h-control w-full items-center justify-center gap-2 rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg sm:w-auto"
                   >
                     <Search size={16} />
                     Buscar
@@ -376,11 +376,11 @@ export function Historias() {
               />
             </label>
 
-            <div className="mt-5 flex justify-end gap-2">
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => setShowCreate(false)}
-                className="inline-flex min-h-control items-center justify-center rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg"
+                className="inline-flex min-h-control w-full items-center justify-center rounded-control border border-border bg-white px-4 text-sm font-medium text-text-soft transition-colors hover:bg-bg sm:w-auto"
               >
                 Cancelar
               </button>
@@ -388,7 +388,7 @@ export function Historias() {
                 type="button"
                 onClick={handleCreate}
                 disabled={createMutation.isPending}
-                className="inline-flex min-h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 <Plus size={16} />
                 Crear e ingresar
@@ -398,7 +398,7 @@ export function Historias() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-1">
         {TABS.map((t) => {
           const count = t.value === 'todos' ? totalTodos : countsQuery.data?.[t.value]
           const active = tab === t.value
@@ -410,7 +410,7 @@ export function Historias() {
                 setTab(t.value)
                 setPage(1)
               }}
-              className={`inline-flex min-h-control items-center gap-2 rounded-control px-4 text-sm font-medium transition-colors duration-150 ease-out ${
+              className={`inline-flex min-h-control shrink-0 items-center gap-2 rounded-control px-4 text-sm font-medium transition-colors duration-150 ease-out ${
                 active ? 'bg-primary text-white' : 'bg-white text-text-soft border border-border hover:bg-bg'
               }`}
             >
@@ -429,43 +429,48 @@ export function Historias() {
         })}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
+          <label htmlFor="search-historias" className="sr-only">Buscar historias clínicas</label>
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
+            id="search-historias"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
               setPage(1)
             }}
             placeholder="Buscar por paciente, DNI o diagnóstico…"
-            className="min-h-control w-full rounded-control border border-border bg-white pl-9 pr-3 text-sm text-text placeholder:text-text-muted focus-visible:border-primary"
+            className="min-h-control w-full rounded-control border border-border bg-white pl-9 pr-3 text-base text-text placeholder:text-text-muted focus-visible:border-primary sm:text-sm"
           />
         </div>
-        <select
-          value={medicoId}
-          onChange={(e) => {
-            setMedicoId(e.target.value)
-            setPage(1)
-          }}
-          className="min-h-control rounded-control border border-border bg-white px-3 text-sm text-text-soft sm:w-56"
-        >
-          <option value="">Todos los médicos</option>
-          {medicosQuery.data?.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.titulo} {m.nombre}
-            </option>
-          ))}
-        </select>
+        <label className="flex flex-col gap-1 text-sm lg:w-64">
+          <span className="sr-only">Filtrar por médico</span>
+          <select
+            value={medicoId}
+            onChange={(e) => {
+              setMedicoId(e.target.value)
+              setPage(1)
+            }}
+            className="min-h-control w-full rounded-control border border-border bg-white px-3 text-base text-text-soft sm:text-sm"
+          >
+            <option value="">Todos los médicos</option>
+            {medicosQuery.data?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.titulo} {m.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="overflow-hidden rounded-card border border-border bg-surface">
         {selected.size > 0 && (
-          <div className="flex items-center justify-between gap-2 border-b border-[#EEF2F1] bg-primary-soft px-4 py-2">
+          <div className="flex flex-col gap-2 border-b border-[#EEF2F1] bg-primary-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-sm font-medium text-primary">
               {selected.size} historia{selected.size === 1 ? '' : 's'} seleccionada{selected.size === 1 ? '' : 's'}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => setSelected(new Set())}
@@ -477,7 +482,7 @@ export function Historias() {
                 type="button"
                 onClick={handleArchiveSelected}
                 disabled={archiveManyMutation.isPending}
-                className="inline-flex h-8 items-center gap-1.5 rounded-control bg-danger px-3 text-xs font-medium text-white transition-colors hover:bg-[#8f2f22] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-control items-center gap-1.5 rounded-control bg-danger px-3 text-sm font-medium text-white transition-colors hover:bg-[#8f2f22] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Archive size={14} />
                 Archivar seleccionadas
@@ -485,7 +490,74 @@ export function Historias() {
             </div>
           </div>
         )}
-        <div className="overflow-x-auto">
+        <div className="divide-y divide-[#EEF2F1] xl:hidden">
+          {historiasQuery.isLoading ? (
+            <div className="p-4"><TableSkeleton rows={4} cols={1} /></div>
+          ) : rows.map((h) => (
+            <article key={h.id} className="p-4">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  aria-label={`Seleccionar historia de ${pacienteNombre(h)}`}
+                  checked={selected.has(h.id)}
+                  onChange={() => toggleSelected(h.id)}
+                  className="mt-1 h-5 w-5 shrink-0 rounded border-border accent-primary"
+                />
+                <div className="min-w-0 flex-1">
+                  <Link to={`/historias/${h.id}`} className="font-medium text-text hover:text-primary">
+                    {pacienteNombre(h)}
+                  </Link>
+                  <p className="mt-1 break-words text-sm text-text-muted">{h.diagnostico}</p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/historias/${h.id}`)}
+                    aria-label="Ver historia"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-control text-primary hover:bg-primary-soft"
+                  >
+                    <Eye size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleArchive(h.id, pacienteNombre(h))}
+                    aria-label="Archivar historia"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-control text-danger-soft-fg hover:bg-danger-soft-bg"
+                  >
+                    <Archive size={18} />
+                  </button>
+                </div>
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 pl-8 text-sm">
+                <div>
+                  <dt className="text-xs text-text-muted">DNI</dt>
+                  <dd className="mt-1 text-text-soft">{pacienteDni(h)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Médico</dt>
+                  <dd className="mt-1 break-words text-text-soft">{medicoNombre(h)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Plan de trabajo</dt>
+                  <dd className="mt-1"><EvalBadge value={h.plan_trabajo_estado} /></dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Objetivos</dt>
+                  <dd className="mt-1"><EvalBadge value={h.objetivos_estado} /></dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Estado</dt>
+                  <dd className="mt-1"><EstadoRevisionBadge value={h.estado_revision} /></dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Plazo</dt>
+                  <dd className="mt-1 text-text-soft">{formatDate(h.plazo)}</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto xl:block">
           <table className="w-full min-w-[860px] text-sm">
             <thead>
               <tr className="bg-[#F7FAF9] text-left text-xs uppercase tracking-wide text-text-muted">
@@ -502,7 +574,7 @@ export function Historias() {
                           return next
                         })
                       }
-                      className="h-4 w-4 rounded border-border accent-primary"
+                      className="h-5 w-5 rounded border-border accent-primary"
                     />
                   )}
                 </th>
@@ -526,7 +598,7 @@ export function Historias() {
                         aria-label={`Seleccionar historia de ${pacienteNombre(h)}`}
                         checked={selected.has(h.id)}
                         onChange={() => toggleSelected(h.id)}
-                        className="h-4 w-4 rounded border-border accent-primary"
+                        className="h-5 w-5 rounded border-border accent-primary"
                       />
                     </td>
                     <td className="px-3 py-1.5">
@@ -553,7 +625,7 @@ export function Historias() {
                           type="button"
                           onClick={() => navigate(`/historias/${h.id}`)}
                           aria-label="Ver historia"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-primary-soft hover:text-primary"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-primary-soft hover:text-primary"
                         >
                           <Eye size={15} />
                         </button>
@@ -561,7 +633,7 @@ export function Historias() {
                           type="button"
                           onClick={() => handleArchive(h.id, pacienteNombre(h))}
                           aria-label="Archivar historia"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-danger-soft-bg hover:text-danger-soft-fg"
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-control text-text-muted transition-colors duration-150 hover:bg-danger-soft-bg hover:text-danger-soft-fg"
                         >
                           <Archive size={15} />
                         </button>

@@ -13,6 +13,11 @@ web/.env.local
 # Env
 .env
 .env.local
+.env.prod
+.env.*.local
 
 # OS
 .DS_Store
+
+# Herramientas locales
+.serena/

@@ -43,8 +43,10 @@ export async function fetchPacientes(q: string, page = 1, pageSize = 20): Promis
   return res.data
 }
 
-export type CreatePacienteInput = Pick<Paciente, 'dni' | 'nombres' | 'apellidos'> &
-  Partial<Pick<Paciente, 'fecha_nac' | 'sexo' | 'telefono'>>
+export type CreatePacienteInput = Pick<Paciente, 'dni' | 'nombres' | 'apellidos'> & {
+  fecha_nac: string
+  sexo: string
+} & Partial<Pick<Paciente, 'telefono'>>
 
 export async function createPaciente(input: CreatePacienteInput): Promise<Paciente> {
   const res = await api.post<Paciente>('/api/v1/pacientes', input)

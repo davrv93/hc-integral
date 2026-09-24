@@ -15,10 +15,10 @@ export function IdentificacionTab({ historia }: { historia: Historia }) {
   const medico = historia.medico
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <section>
-        <h3 className="mb-3 font-serif text-base font-semibold text-text">Paciente</h3>
-        <div className="grid grid-cols-2 gap-4 rounded-card border border-border bg-surface p-5 sm:grid-cols-3">
+        <h3 className="mb-2 font-serif text-base font-semibold text-text">Paciente</h3>
+        <div className="grid grid-cols-2 gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-3">
           <Field label="Nombres" value={paciente ? `${paciente.nombres} ${paciente.apellidos}` : ''} />
           <Field label="DNI" value={paciente?.dni ?? ''} />
           <Field label="Fecha de nacimiento" value={paciente?.fecha_nac ? formatDate(paciente.fecha_nac) : ''} />
@@ -28,28 +28,20 @@ export function IdentificacionTab({ historia }: { historia: Historia }) {
       </section>
 
       <section>
-        <h3 className="mb-3 font-serif text-base font-semibold text-text">Médico tratante</h3>
-        <div className="grid grid-cols-2 gap-4 rounded-card border border-border bg-surface p-5 sm:grid-cols-3">
+        <h3 className="mb-2 font-serif text-base font-semibold text-text">Médico tratante</h3>
+        <div className="grid grid-cols-2 gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-3">
           <Field label="Nombre" value={medico ? `${medico.titulo} ${medico.nombre}` : ''} />
           <Field label="Especialidad" value={medico?.especialidad ?? ''} />
         </div>
       </section>
 
       <section>
-        <h3 className="mb-3 font-serif text-base font-semibold text-text">Diagnóstico</h3>
-        <div className="rounded-card border border-border bg-surface p-5">
+        <h3 className="mb-2 font-serif text-base font-semibold text-text">Diagnóstico</h3>
+        <div className="rounded-card border border-border bg-surface p-4">
           <p className="text-sm text-text">{historia.diagnostico}</p>
         </div>
       </section>
 
-      <section>
-        <h3 className="mb-3 font-serif text-base font-semibold text-text">Datos de la historia</h3>
-        <div className="grid grid-cols-2 gap-4 rounded-card border border-border bg-surface p-5 sm:grid-cols-3">
-          <Field label="Correlativo" value={`#${historia.correlativo}`} />
-          <Field label="Creada" value={formatDate(historia.created_at)} />
-          <Field label="Última actualización" value={formatDate(historia.updated_at)} />
-        </div>
-      </section>
     </div>
   )
 }

@@ -136,7 +136,7 @@ export function HistoriaDetalle() {
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(onSubmit)} className="hc-particles -m-3 rounded-card p-3">
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="flex min-w-0 flex-col gap-4 pb-24">
+          <div className="flex min-w-0 flex-col gap-4 pb-28">
             <div className="hc-panel flex flex-col gap-3 rounded-card border border-border bg-surface/95 p-4 shadow-sm">
               <Link to="/historias" className="inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-primary">
                 <ArrowLeft size={14} />
@@ -181,12 +181,12 @@ export function HistoriaDetalle() {
           <HistoriaTimeline historia={historia} />
         </div>
 
-        <div className="fixed bottom-0 left-[240px] right-0 border-t border-border bg-surface/95 px-7 py-4 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-[1200px] items-center justify-end gap-3">
-            <span className="text-sm text-text-muted">
+        <div className="fixed inset-x-0 bottom-[calc(52px+env(safe-area-inset-bottom))] border-t border-border bg-surface/95 px-4 py-3 backdrop-blur-sm md:bottom-0 md:left-[240px] md:px-7 md:py-4">
+          <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-2 md:justify-end md:gap-3">
+            <span className="min-w-0 truncate text-xs text-text-muted sm:text-sm">
               {methods.formState.isDirty ? 'Tienes cambios sin guardar' : 'Sin cambios pendientes'}
             </span>
-            <Button type="submit" loading={saveMutation.isPending} disabled={!methods.formState.isDirty}>
+            <Button type="submit" loading={saveMutation.isPending} disabled={!methods.formState.isDirty} className="shrink-0 px-3 sm:px-4">
               <Save size={16} />
               Registrar atencion
             </Button>

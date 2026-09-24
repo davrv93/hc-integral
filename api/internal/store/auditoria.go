@@ -77,3 +77,33 @@ func (s *Store) ListAuditoria(ctx context.Context, entidad, entidadID string, pa
 	}
 	return out, total, rows.Err()
 }
+
+func (s *Store) ListAuditoriaReciente(ctx context.Context, limit int) ([]model.Auditoria, error) {
+	rows, err := s.Pool.Query(ctx, `
+		SELECT id, usuario_id, accion, entidad, entidad_id, antes, despues, ip, ts
+		FROM auditoria
+		ORDER BY ts DESC
+		LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]model.Auditoria, 0)
+	for rows.Next() {
+		var a model.Auditoria
+		var antes, despues []byte
+		if err := rows.Scan(&a.ID, &a.UsuarioID, &a.Accion, &a.Entidad, &a.EntidadID, &antes, &despues, &a.IP, &a.TS); err != nil {
+			return nil, err
+		}
+		a.TS = a.TS.UTC()
+		if antes != nil {
+			_ = json.Unmarshal(antes, &a.Antes)
+		}
+		if despues != nil {
+			_ = json.Unmarshal(despues, &a.Despues)
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}

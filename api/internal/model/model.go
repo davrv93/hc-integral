@@ -23,6 +23,16 @@ type Medico struct {
 	Activo       bool    `json:"activo"`
 }
 
+type Usuario struct {
+	ID        string    `json:"id"`
+	Email     string    `json:"email"`
+	Nombre    string    `json:"nombre"`
+	Rol       string    `json:"rol"`
+	Activo    bool      `json:"activo"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Intervencion struct {
 	ID            string    `json:"id"`
 	HistoriaID    string    `json:"historia_id"`

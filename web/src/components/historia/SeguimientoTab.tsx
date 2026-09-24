@@ -9,8 +9,8 @@ export function SeguimientoTab() {
   const { control, register } = useFormContext<HistoriaFormValues>()
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="rounded-card border border-border bg-surface p-5">
+    <div className="flex flex-col gap-4">
+      <div className="rounded-card border border-border bg-surface p-4">
         <label className="mb-2 block text-sm font-medium text-text-soft" htmlFor="plazo">
           Plazo
         </label>
@@ -22,24 +22,24 @@ export function SeguimientoTab() {
         />
       </div>
 
-      <div className="rounded-card border border-border bg-surface p-5">
+      <div className="rounded-card border border-border bg-surface p-4">
         <p className="mb-2 text-sm font-medium text-text-soft">Estado de revisión</p>
         <Controller
           control={control}
           name="estado_revision"
           render={({ field }) => (
-            <SegmentedControl options={ESTADO_OPTIONS} value={field.value} onChange={field.onChange} />
+            <SegmentedControl label="Estado de revisión" options={ESTADO_OPTIONS} value={field.value} onChange={field.onChange} />
           )}
         />
       </div>
 
-      <div className="rounded-card border border-border bg-surface p-5">
+      <div className="rounded-card border border-border bg-surface p-4">
         <label className="mb-2 block text-sm font-medium text-text-soft" htmlFor="observaciones">
           Observaciones
         </label>
         <textarea
           id="observaciones"
-          rows={5}
+          rows={3}
           {...register('observaciones')}
           className="w-full rounded-control border border-border bg-white p-3 text-sm text-text placeholder:text-text-muted focus-visible:border-primary"
           placeholder="Observaciones del seguimiento…"

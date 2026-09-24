@@ -128,6 +128,13 @@ func (s *Server) handleGetHistoria(w http.ResponseWriter, r *http.Request) {
 	}
 	h.Intervenciones = intervenciones
 
+	atenciones, err := s.Store.ListAtenciones(r.Context(), h.ID)
+	if err != nil {
+		httpx.InternalError(w, err)
+		return
+	}
+	h.Atenciones = atenciones
+
 	httpx.WriteJSON(w, http.StatusOK, h)
 }
 

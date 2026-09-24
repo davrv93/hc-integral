@@ -11,7 +11,7 @@ interface TabsProps {
 
 export function Tabs({ tabs, value, onChange }: TabsProps) {
   return (
-    <div className="flex gap-1 overflow-x-auto border-b border-border">
+    <div className="flex gap-1 overflow-x-auto border-b border-border px-1 [scrollbar-width:thin]">
       {tabs.map((tab) => {
         const active = tab.value === value
         return (
@@ -19,7 +19,7 @@ export function Tabs({ tabs, value, onChange }: TabsProps) {
             key={tab.value}
             type="button"
             onClick={() => onChange(tab.value)}
-            className={`relative whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors duration-150 ease-out ${
+            className={`relative min-h-control shrink-0 whitespace-nowrap px-3 text-sm font-medium transition-colors duration-150 ease-out ${
               active ? 'text-primary' : 'text-text-muted hover:text-text-soft'
             }`}
           >

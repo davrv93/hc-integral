@@ -9,7 +9,7 @@ interface PaginationProps {
 
 export function Pagination({ page, totalPages, onPageChange, total }: PaginationProps) {
   return (
-    <div className="flex items-center justify-between px-3 py-2">
+    <div className="flex items-center justify-between gap-3 px-4 py-3">
       <span className="text-xs text-text-muted">
         {total !== undefined ? `${total} en total · ` : ''}Página {page} de {totalPages}
       </span>
@@ -19,7 +19,7 @@ export function Pagination({ page, totalPages, onPageChange, total }: Pagination
             type="button"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-control border border-border bg-white text-text-soft transition-colors duration-150 hover:bg-bg disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-control border border-border bg-white text-text-soft transition-colors duration-150 hover:bg-bg disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Página anterior"
           >
             <ChevronLeft size={15} />
@@ -28,7 +28,7 @@ export function Pagination({ page, totalPages, onPageChange, total }: Pagination
             type="button"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-control border border-border bg-white text-text-soft transition-colors duration-150 hover:bg-bg disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-control border border-border bg-white text-text-soft transition-colors duration-150 hover:bg-bg disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Página siguiente"
           >
             <ChevronRight size={15} />

@@ -2,8 +2,10 @@ package apiserver
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -32,6 +34,25 @@ type createPacienteRequest struct {
 	Telefono  *string `json:"telefono"`
 }
 
+func validateCreatePacienteRequest(req createPacienteRequest) error {
+	if !validDNI(req.DNI) {
+		return errors.New("dni must be exactly 8 digits")
+	}
+	if req.Nombres == "" || req.Apellidos == "" {
+		return errors.New("nombres and apellidos are required")
+	}
+	if req.FechaNac == nil || strings.TrimSpace(*req.FechaNac) == "" {
+		return errors.New("fecha_nac is required")
+	}
+	if _, err := time.Parse("2006-01-02", *req.FechaNac); err != nil {
+		return errors.New("fecha_nac must use YYYY-MM-DD format")
+	}
+	if req.Sexo == nil || strings.TrimSpace(*req.Sexo) == "" {
+		return errors.New("sexo is required")
+	}
+	return nil
+}
+
 func (s *Server) handleCreatePaciente(w http.ResponseWriter, r *http.Request) {
 	var req createPacienteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -42,13 +63,17 @@ func (s *Server) handleCreatePaciente(w http.ResponseWriter, r *http.Request) {
 	req.DNI = strings.TrimSpace(req.DNI)
 	req.Nombres = strings.TrimSpace(req.Nombres)
 	req.Apellidos = strings.TrimSpace(req.Apellidos)
-
-	if !validDNI(req.DNI) {
-		httpx.UnprocessableEntity(w, "dni must be exactly 8 digits")
-		return
+	if req.FechaNac != nil {
+		fechaNac := strings.TrimSpace(*req.FechaNac)
+		req.FechaNac = &fechaNac
 	}
-	if req.Nombres == "" || req.Apellidos == "" {
-		httpx.UnprocessableEntity(w, "nombres and apellidos are required")
+	if req.Sexo != nil {
+		sexo := strings.TrimSpace(*req.Sexo)
+		req.Sexo = &sexo
+	}
+
+	if err := validateCreatePacienteRequest(req); err != nil {
+		httpx.UnprocessableEntity(w, err.Error())
 		return
 	}
 

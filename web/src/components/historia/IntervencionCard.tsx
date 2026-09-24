@@ -37,13 +37,13 @@ export function IntervencionCard({ historiaId, disciplina }: { historiaId: strin
   })
 
   return (
-    <div className="flex flex-col gap-3 rounded-card border border-border bg-surface p-5">
+    <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-4">
       <div className="flex items-center gap-2">
         <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ACCENT[disciplina] }} />
         <h4 className="font-serif text-sm font-semibold text-text">{DISCIPLINA_LABEL[disciplina]}</h4>
       </div>
       <textarea
-        rows={4}
+        rows={3}
         value={detalle}
         onChange={(e) => {
           setDetalle(e.target.value)
