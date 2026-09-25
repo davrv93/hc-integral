@@ -20,6 +20,14 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    # 25-09-2026: de fábrica (128MB/100 conexiones) para 4-10 usuarios reales
+    # (personal de la clínica) y una base de 8,5 MB que cabe entera en 16MB.
+    # 20 conexiones da margen sobre las 7 que ya mantienen auth/api/worker
+    # más un puñado de sesiones humanas. Sin techo de memoria antes (0 = sin
+    # límite); 64m da 2,7x sobre los 23 MB medidos ese día.
+    command: postgres -c max_connections=20 -c shared_buffers=16MB
+    mem_limit: 64m
+    memswap_limit: 64m
     networks: [hc_net]
 
   auth:
